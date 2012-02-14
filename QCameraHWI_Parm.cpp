@@ -2702,9 +2702,12 @@ status_t QCameraHardwareInterface::setHighFrameRate(const CameraParameters& para
 //                                      hfr_thread,
 //                                      (void*)NULL);
 //                    mHFRThreadWaitLock.unlock();
- 		    stopPreview();
+                    stopPreviewInternal();
+                    mPreviewState = QCAMERA_HAL_PREVIEW_STOPPED;
                     native_set_parms(MM_CAMERA_PARM_HFR, sizeof(int32_t), (void *)&mHFRLevel);
-                    startPreview();
+                    mPreviewState = QCAMERA_HAL_PREVIEW_START;
+                    if (startPreview2() == NO_ERROR)
+                        mPreviewState = QCAMERA_HAL_PREVIEW_STARTED;
                     return NO_ERROR;
                 }
             }
@@ -3045,6 +3048,16 @@ status_t QCameraHardwareInterface::setPictureFormat(const CameraParameters& para
     return NO_ERROR;
 }
 
+status_t QCameraHardwareInterface::setRecordingHintValue(const int32_t value)
+{
+    native_set_parms(MM_CAMERA_PARM_RECORDING_HINT, sizeof(value),
+                                           (void *)&value);
+    native_set_parms(MM_CAMERA_PARM_CAF_ENABLE, sizeof(value),
+                                           (void *)&value);
+    setDISMode();
+    setFullLiveshot();
+    return NO_ERROR;
+}
 
 status_t QCameraHardwareInterface::setRecordingHint(const CameraParameters& params)
 {
@@ -3056,14 +3069,12 @@ status_t QCameraHardwareInterface::setRecordingHint(const CameraParameters& para
                                   sizeof(recording_Hints) / sizeof(str_map), str);
       ALOGE("setRecordingHint %s",str);
       if(value != NOT_FOUND){
-        mRecordingHint = value;
-//        native_set_parms(MM_CAMERA_PARM_RECORDING_HINT, sizeof(value),
-//                                               (void *)&value);
-        if (value == TRUE) {
-          native_set_parms(MM_CAMERA_PARM_CONTINUOUS_AF, sizeof(value),
-                                               (void *)&value);
-        }
-        mParameters.set(CameraParameters::KEY_RECORDING_HINT, str);
+          if (mRecordingHint == FALSE) {
+              mRecordingHint = value;
+          }
+          setRecordingHintValue(mRecordingHint);
+          mParameters.set(CameraParameters::KEY_RECORDING_HINT, str);
+          return NO_ERROR;
       } else {
           ALOGE("Invalid Picture Format value: %s", str);
           setDISMode();
@@ -3081,27 +3092,28 @@ status_t QCameraHardwareInterface::setDISMode() {
 //  if(isLowPowerCamcorder())
 //      mDisEnabled = 0; 
 
-  uint32_t value = mRecordingHint && mDisEnabled;
+  uint32_t value = mRecordingHint && mDisEnabled
+		&& !isLowPowerCamcorder();
 
   /* TODO Remove this workaround once the C2D limitation
    * (32 alignment on width) is fixed. */
   /* Start workaround */
   /*
   * in live effect case Dimension will be reversed.
-  */
+  
   if (mDimension.display_width == QCIF_WIDTH || mDimension.display_height == QCIF_WIDTH ||
       mDimension.display_width == D1_WIDTH || mDimension.display_height == D1_WIDTH) {
       value = 0;
   }
-  /* End workaround */
+   End workaround */
 
 
   ALOGI("%s DIS is %s value = %d", __func__,
           value ? "Enabled" : "Disabled", value);
-//  native_set_parms(MM_CAMERA_PARM_DIS_ENABLE, sizeof(value),
-//                                               (void *)&value);
+  native_set_parms(MM_CAMERA_PARM_DIS_ENABLE, sizeof(value),
+                                               (void *)&value);
 
-    video_dis_param_ctrl_t disCtrl;
+/*    video_dis_param_ctrl_t disCtrl;
     bool ret = true;
     ALOGV("mDisEnabled = %d", value);
 
@@ -3120,7 +3132,7 @@ status_t QCameraHardwareInterface::setDISMode() {
 
     ret = native_set_parms( MM_CAMERA_PARM_VIDEO_DIS,
                        sizeof(disCtrl), &disCtrl);
-
+*/
   return NO_ERROR;
 }
 
