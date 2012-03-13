@@ -75,6 +75,10 @@ status_t QCameraStream_preview::setPreviewWindow(preview_stream_ops_t* window)
            mbPausedBySnapshot = FALSE;
 
            ALOGV("%s : Preview window changed, previous buffer unprepared",__func__);
+           if (mDisplayBuf.preview.buf.mp != NULL) {
+               delete[] mDisplayBuf.preview.buf.mp;
+               mDisplayBuf.preview.buf.mp = NULL;
+           }
            /*free camera_memory handles and return buffer back to surface*/
            putBufferToSurface();
        }
@@ -1100,10 +1104,13 @@ QCameraStream_preview::~QCameraStream_preview() {
 	if(mInit) {
 		release();
 	}
-
     if (mbPausedBySnapshot) {
        mbPausedBySnapshot = FALSE;
        ALOGV("%s : previous buffer unprepared",__func__);
+       if (mDisplayBuf.preview.buf.mp != NULL) {
+           delete[] mDisplayBuf.preview.buf.mp;
+           mDisplayBuf.preview.buf.mp = NULL;
+       }
        /*free camera_memory handles and return buffer back to surface*/
        putBufferToSurface();
     }
@@ -1329,6 +1336,11 @@ end:
     if (!mbPausedBySnapshot) {
         /* In case of a clean stop, we need to clean all buffers*/
         ALOGE("Debug : %s : Buffer Unprepared",__func__);
+        if (mDisplayBuf.preview.buf.mp != NULL) {
+            delete[] mDisplayBuf.preview.buf.mp;
+            mDisplayBuf.preview.buf.mp = NULL;
+        }
+
         /*free camera_memory handles and return buffer back to surface*/
         if (! mHalCamCtrl->isNoDisplayMode() ) {
           putBufferToSurface();
