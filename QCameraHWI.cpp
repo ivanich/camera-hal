@@ -17,6 +17,7 @@
 /*#error uncomment this for compiler test!*/
 
 #define LOG_NIDEBUG 0
+
 #define LOG_TAG "QCameraHWI"
 #include <utils/Log.h>
 #include <utils/threads.h>
@@ -1221,6 +1222,9 @@ status_t QCameraHardwareInterface::startRecording()
         ret = UNKNOWN_ERROR;
         break;
     case QCAMERA_HAL_PREVIEW_STARTED:
+        if(!mFullLiveshotEnabled) {
+            prepareVideoPicture(true);
+        }
         ret =  mStreamRecord->start();
         if (MM_CAMERA_OK != ret){
             ALOGE("%s: error - mStreamRecord->start!", __func__);
@@ -1255,6 +1259,9 @@ void QCameraHardwareInterface::stopRecording()
     case QCAMERA_HAL_PREVIEW_STARTED:
         break;
     case QCAMERA_HAL_RECORDING_STARTED:
+        if(!mFullLiveshotEnabled) {
+            prepareVideoPicture(false);
+        }
         stopRecordingInternal();
         mPreviewState = QCAMERA_HAL_PREVIEW_STARTED;
         break;
