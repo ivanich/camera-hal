@@ -476,6 +476,7 @@ public:
     exif_tags_info_t* getExifData(){ return mExifData; }
     void resetExifData();
     void initExifData();
+    void deinitExifData();
     int getExifTableNumEntries() { return mExifTableNumEntries; }
     void changeMode(camera_mode_t mode);
     int mZslFlashEnable;

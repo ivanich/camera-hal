@@ -3517,6 +3517,16 @@ int QCameraHardwareInterface::getZSLBackLookCount(void) const
 }
 
 //EXIF functions
+void QCameraHardwareInterface::deinitExifData()
+{
+    ALOGD("Clearing EXIF data");
+    for(int i=0; i<MAX_EXIF_TABLE_ENTRIES; i++)
+    {
+        //clear all data
+        memset(&mExifData[i], 0x00, sizeof(exif_tags_info_t));
+    }
+    mExifTableNumEntries = 0;
+}
 
 void QCameraHardwareInterface::resetExifData()
 {
