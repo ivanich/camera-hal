@@ -1745,7 +1745,7 @@ status_t QCameraHardwareInterface::autoFocus()
 
     if(mAutoFocusRunning==true){
       ALOGE("%s:AF already running should not have got this call",__func__);
-      return UNKNOWN_ERROR;
+      return NO_ERROR;
     }
 
     if (afMode == AF_MODE_MAX) {
