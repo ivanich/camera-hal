@@ -1957,7 +1957,7 @@ status_t QCameraHardwareInterface::setFocusMode(const CameraParameters& params)
             mParameters.set(CameraParameters::KEY_FOCUS_MODE, str);
             mFocusMode = value;
 
-            if(updateFocusDistances() != NO_ERROR) {
+            if(mHasAutoFocusSupport && (updateFocusDistances() != NO_ERROR)) {
                ALOGE("%s: updateFocusDistances failed for %s", __FUNCTION__, str);
                return UNKNOWN_ERROR;
             }
