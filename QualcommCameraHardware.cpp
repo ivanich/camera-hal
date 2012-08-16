@@ -736,12 +736,12 @@ static const str_map iso_3D[] = {
 
 #define DONT_CARE AF_MODE_MAX
 static const str_map focus_modes[] = {
-    { CameraParameters::FOCUS_MODE_AUTO,     AF_MODE_AUTO},
-    { CameraParameters::FOCUS_MODE_INFINITY, DONT_CARE },
-    { CameraParameters::FOCUS_MODE_NORMAL,   AF_MODE_NORMAL },
-    { CameraParameters::FOCUS_MODE_MACRO,    AF_MODE_MACRO },
-    { CameraParameters::FOCUS_MODE_CONTINUOUS_PICTURE, AF_MODE_CAF },
-    { CameraParameters::FOCUS_MODE_CONTINUOUS_VIDEO, DONT_CARE }
+    { QCameraParameters::FOCUS_MODE_AUTO,     AF_MODE_AUTO},
+    { QCameraParameters::FOCUS_MODE_INFINITY, DONT_CARE },
+    { QCameraParameters::FOCUS_MODE_NORMAL,   AF_MODE_NORMAL },
+    { QCameraParameters::FOCUS_MODE_MACRO,    AF_MODE_MACRO },
+   // { QCameraParameters::FOCUS_MODE_CONTINUOUS_PICTURE, AF_MODE_CAF },
+    { QCameraParameters::FOCUS_MODE_CONTINUOUS_VIDEO, DONT_CARE }
 };
 
 static const str_map lensshade[] = {
