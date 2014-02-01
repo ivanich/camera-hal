@@ -2,7 +2,7 @@ ifeq ($(TARGET_PROVIDES_CAMERA_HAL),true)
 ifneq ($(USE_CAMERA_STUB),true)
 ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
 ifeq ($(BOARD_VENDOR),htc)
-ifeq ($(TARGET_BOARD_PLATFORM),msm8660)
+ifeq ($(TARGET_BOARD_PLATFORM),msm8960)
 
 # When zero we link against libmmcamera; when 1, we dlopen libmmcamera.
 DLOPEN_LIBMMCAMERA := 1
@@ -43,7 +43,7 @@ LOCAL_C_INCLUDES += \
     $(TARGET_OUT_HEADERS)/mm-still \
     $(TARGET_OUT_HEADERS)/mm-still/jpeg
 
-ifeq ($(TARGET_BOARD_PLATFORM),msm8660)
+ifeq ($(TARGET_BOARD_PLATFORM),msm8960)
 LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/mm-core/omxcore
 LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/mm-still/mm-omx
 endif
@@ -51,16 +51,16 @@ endif
 #yyan if debug service layer and up , use stub camera!
 LOCAL_C_INCLUDES += \
         frameworks/base/services/camera/libcameraservice \
-        hardware/qcom/display-caf/libgralloc \
-        hardware/qcom/display-caf/libgenlock \
-        hardware/qcom/media-caf/libstagefrighthw
+        hardware/qcom/display/libgralloc \
+        hardware/qcom/display/libgenlock \
+        hardware/qcom/media/libstagefrighthw
 
 # CM doesn't use kernel includes
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include/media
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
 LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
 
-ifeq ($(TARGET_BOARD_PLATFORM),msm8660)
+ifeq ($(TARGET_BOARD_PLATFORM),msm8960)
 LOCAL_SRC_FILES := mm_camera_interface2.c mm_camera_stream.c \
                    mm_camera_channel.c mm_camera.c \
                    mm_camera_poll_thread.c mm_camera_notify.c \
@@ -77,7 +77,7 @@ endif
 
 LOCAL_SHARED_LIBRARIES := libgenlock libbinder
 
-ifeq ($(TARGET_BOARD_PLATFORM),msm8660)
+ifeq ($(TARGET_BOARD_PLATFORM),msm8960)
 LOCAL_SHARED_LIBRARIES += libutils libui libcamera_client liblog libcutils libmmjpeg #libmmstillomx libimage-jpeg-enc-omx-comp
 else
 LOCAL_SHARED_LIBRARIES += libutils libui libcamera_client liblog libcutils libmmjpeg

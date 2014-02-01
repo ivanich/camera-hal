@@ -38,13 +38,13 @@
 #define EXIFTAGID_EXIF_DATE_TIME_CREATED    0x949004
 #define EXIFTAGID_FOCAL_LENGTH         0xa0920a
 #define EXIFTAGID_ISO_SPEED_RATING     0x908827
-#if 0
+
 enum {
     CAMERA_CMD_HISTOGRAM_ON = 8,
     CAMERA_CMD_HISTOGRAM_OFF = 9,
     CAMERA_CMD_HISTOGRAM_SEND_DATA = 10,
 };
-#endif
+
 struct jpeg_buf_t;
 typedef struct jpeg_buf_t * jpeg_buffer_t;
 
@@ -402,7 +402,6 @@ typedef struct {
   cam_frame_type_t frame_type;
   cam_3d_frame_format_t format;
 }camera_3d_frame_t;
-
 
 typedef struct {
   camera_mode_t modes_supported;

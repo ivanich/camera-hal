@@ -161,9 +161,8 @@ status_t QCameraStream_preview::getBufferFromSurface() {
     }
     previewBufSize = dim.display_width * dim.display_height * 3/2;
     err = mPreviewWindow->set_usage(mPreviewWindow,
-        GRALLOC_USAGE_PRIVATE_CAMERA_HEAP |
-        GRALLOC_USAGE_PRIVATE_IOMMU_HEAP | 
-        GRALLOC_USAGE_PRIVATE_UNCACHED);
+        GRALLOC_USAGE_PRIVATE_MM_HEAP |
+        GRALLOC_USAGE_PRIVATE_IOMMU_HEAP);
 	if(err != 0) {
         /* set_usage error out */
 		ALOGE("%s: set_usage rc = %d", __func__, err);

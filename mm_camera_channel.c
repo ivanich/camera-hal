@@ -37,7 +37,6 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <poll.h>
 #include "mm_camera_interface2.h"
 #include "mm_camera.h"
-#include "linux/msm_ion.h"
 
 #if 0
 #undef CDBG
