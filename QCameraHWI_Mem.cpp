@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2011-2012 Code Aurora Forum. All rights reserved.
+** Copyright (c) 2011-2012 The Linux Foundation. All rights reserved.
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 
 /*#error uncomment this for compiler test!*/
 
-//#define LOG_NDEBUG 0
-#define LOG_NIDEBUG 0
+//#define ALOG_NDEBUG 0
+#define ALOG_NIDEBUG 0
 #define LOG_TAG "QCameraHWI_Mem"
 #include <utils/Log.h>
 
 #include <utils/Errors.h>
 #include <utils/threads.h>
-#include <binder/MemoryHeapPmem.h>
+//#include <binder/MemoryHeapPmem.h>
 #include <utils/String16.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -35,7 +35,7 @@
 #include <linux/android_pmem.h>
 #endif
 #include <linux/ioctl.h>
-#include <camera/CameraParameters.h>
+#include "QCameraParameters.h"
 #include <media/mediarecorder.h>
 #include <gralloc_priv.h>
 
@@ -166,6 +166,8 @@ static bool register_buf(int size,
                          bool vfe_can_write,
                          bool register_buffer)
 {
+    /*TODO*/
+    /*
     struct msm_pmem_info pmemBuf;
     CAMERA_HAL_UNUSED(frame_size);
 
@@ -181,8 +183,7 @@ static bool register_buf(int size,
 
     ALOGV("register_buf:  reg = %d buffer = %p",
          !register_buffer, buf);
-    /*TODO*/
-    /*if(native_start_ops(register_buffer ? CAMERA_OPS_REGISTER_BUFFER :
+    if(native_start_ops(register_buffer ? CAMERA_OPS_REGISTER_BUFFER :
         CAMERA_OPS_UNREGISTER_BUFFER ,(void *)&pmemBuf) < 0) {
          ALOGE("register_buf: MSM_CAM_IOCTL_(UN)REGISTER_PMEM  error %s",
                strerror(errno));
@@ -228,7 +229,7 @@ bool register_record_buffers(bool register_buffer) {
     return true;
 }
 #endif
-#ifndef USE_ION
+#if 0
 PmemPool::PmemPool(const char *pmem_pool,
                                            int flags,
                                            int pmem_type,
@@ -334,10 +335,11 @@ PmemPool::PmemPool(const char *pmem_pool,
               pmem_pool);
     ALOGI("%s: (%s) X ", __FUNCTION__, mName);
 }
+#endif
 
 PmemPool::~PmemPool()
 {
-    ALOGI("%s: %s E", __FUNCTION__, mName);
+    ALOGV("%s: %s E", __FUNCTION__, mName);
 #if 0
     if (mHeap != NULL) {
         // Unregister preview buffers with the camera drivers.
@@ -362,10 +364,8 @@ PmemPool::~PmemPool()
     }
     mMMCameraDLRef.clear();
 #endif
-    ALOGI("%s: %s X", __FUNCTION__, mName);
+    ALOGV("%s: %s X", __FUNCTION__, mName);
 }
-#endif
-
 MemPool::~MemPool()
 {
     ALOGV("destroying MemPool %s", mName);

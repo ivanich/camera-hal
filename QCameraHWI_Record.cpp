@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2011 Code Aurora Forum. All rights reserved.
+** Copyright (c) 2011 The Linux Foundation. All rights reserved.
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 /*#error uncomment this for compiler test!*/
 
-//#define LOG_NDEBUG 0
-#define LOG_NIDEBUG 0
+//#define ALOG_NDEBUG 0
+#define ALOG_NIDEBUG 0
 #define LOG_TAG "QCameraHWI_Record"
 #include <utils/Log.h>
 #include <utils/threads.h>
@@ -26,7 +26,6 @@
 #include <sys/mman.h>
 
 #include "QCameraStream.h"
-
 
 #define LIKELY(exp)   __builtin_expect(!!(exp), 1)
 #define UNLIKELY(exp) __builtin_expect(!!(exp), 0)
@@ -159,7 +158,7 @@ status_t QCameraStream_record::start()
     return BAD_VALUE;
   }
 
-  setFormat(MM_CAMERA_CH_VIDEO_MASK);
+  setFormat(MM_CAMERA_CH_VIDEO_MASK , (cam_format_t)0);
   //mRecordFreeQueueLock.lock();
   //mRecordFreeQueue.clear();
   //mRecordFreeQueueLock.unlock();
@@ -169,13 +168,14 @@ status_t QCameraStream_record::start()
   ret = initEncodeBuffers();
   if (NO_ERROR!=ret) {
     ALOGE("%s ERROR: Buffer Allocation Failed\n",__func__);
-    return ret;
+    goto error;
   }
 
   ret = cam_config_prepare_buf(mCameraId, &mRecordBuf);
   if(ret != MM_CAMERA_OK) {
-    ALOGV("%s ERROR: Reg Record buf err=%d\n", __func__, ret);
+    ALOGE("%s ERROR: Reg Record buf err=%d\n", __func__, ret);
     ret = BAD_VALUE;
+    goto error;
   }else{
     ret = NO_ERROR;
   }
@@ -183,17 +183,55 @@ status_t QCameraStream_record::start()
   /*
   * Start Video Streaming
   */
-  ret = cam_ops_action(mCameraId, TRUE, MM_CAMERA_OPS_VIDEO, 0);
+  ret = cam_ops_action(mCameraId, true, MM_CAMERA_OPS_VIDEO, 0);
   if (MM_CAMERA_OK != ret) {
     ALOGE ("%s ERROR: Video streaming start err=%d\n", __func__, ret);
     ret = BAD_VALUE;
+    goto error;
   }else{
-    ALOGE("%s : Video streaming Started",__func__);
+    ALOGV("%s : Video streaming Started",__func__);
     ret = NO_ERROR;
   }
   mActive = true;
   ALOGV("%s: END", __func__);
   return ret;
+
+error:
+  releaseEncodeBuffer();
+  ALOGV("%s: END", __func__);
+  return ret;
+}
+
+void QCameraStream_record::releaseEncodeBuffer() {
+  for(int cnt = 0; cnt < mHalCamCtrl->mRecordingMemory.buffer_count; cnt++) {
+    if (NO_ERROR !=
+      mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_VIDEO, cnt,
+      mCameraId, CAM_SOCK_MSG_TYPE_FD_UNMAPPING))
+      ALOGE("%s: Unmapping Video Data Failed", __func__);
+
+    if (mHalCamCtrl->mStoreMetaDataInFrame) {
+      struct encoder_media_buffer_type * packet =
+          (struct encoder_media_buffer_type  *)
+          mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data;
+      native_handle_delete(const_cast<native_handle_t *>(packet->meta_handle));
+      mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->release(
+        mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]);
+
+    }
+    mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->release(
+      mHalCamCtrl->mRecordingMemory.camera_memory[cnt]);
+    close(mHalCamCtrl->mRecordingMemory.fd[cnt]);
+    mHalCamCtrl->mRecordingMemory.fd[cnt] = -1;
+
+#ifdef USE_ION
+    mHalCamCtrl->deallocate_ion_memory(&mHalCamCtrl->mRecordingMemory, cnt);
+#endif
+  }
+  memset(&mHalCamCtrl->mRecordingMemory, 0, sizeof(mHalCamCtrl->mRecordingMemory));
+  //mNumRecordFrames = 0;
+  delete[] recordframes;
+  if (mRecordBuf.video.video.buf.mp)
+    delete[] mRecordBuf.video.video.buf.mp;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,7 +270,7 @@ void QCameraStream_record::stop()
   /* unregister the notify fn from the mmmm_camera_t object
    *  call stop() in parent class to stop the monitor thread */
 
-  ret = cam_ops_action(mCameraId, FALSE, MM_CAMERA_OPS_VIDEO, 0);
+  ret = cam_ops_action(mCameraId, false, MM_CAMERA_OPS_VIDEO, 0);
   if (MM_CAMERA_OK != ret) {
     ALOGE ("%s ERROR: Video streaming Stop err=%d\n", __func__, ret);
   }
@@ -242,30 +280,7 @@ void QCameraStream_record::stop()
     ALOGE("%s ERROR: Ureg video buf \n", __func__);
   }
 
-  for(int cnt = 0; cnt < mHalCamCtrl->mRecordingMemory.buffer_count; cnt++) {
-    if (mHalCamCtrl->mStoreMetaDataInFrame) {
-      struct encoder_media_buffer_type * packet =
-          (struct encoder_media_buffer_type  *)
-          mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->data;
-      native_handle_delete(const_cast<native_handle_t *>(packet->meta_handle));
-      mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]->release(
-		    mHalCamCtrl->mRecordingMemory.metadata_memory[cnt]);
-
-    }
-	  mHalCamCtrl->mRecordingMemory.camera_memory[cnt]->release(
-		  mHalCamCtrl->mRecordingMemory.camera_memory[cnt]);
-	  close(mHalCamCtrl->mRecordingMemory.fd[cnt]);
-
-#ifdef USE_ION
-    mHalCamCtrl->deallocate_ion_memory(&mHalCamCtrl->mRecordingMemory, cnt);
-#endif
-  }
-  memset(&mHalCamCtrl->mRecordingMemory, 0, sizeof(mHalCamCtrl->mRecordingMemory));
-  //mNumRecordFrames = 0;
-  delete[] recordframes;
-  if (mRecordBuf.video.video.buf.mp)
-    delete[] mRecordBuf.video.video.buf.mp;
-
+  releaseEncodeBuffer();
 
   mActive = false;
   ALOGV("%s: END", __func__);
@@ -294,7 +309,7 @@ void QCameraStream_record::release()
   (void)cam_evt_register_buf_notify(mCameraId, MM_CAMERA_CH_VIDEO,
                                             NULL,
                                             (mm_camera_register_buf_cb_type_t)NULL,
-                                            0,
+                                            NULL,
                                             NULL);
   mInit = false;
   ALOGV("%s: END", __func__);
@@ -324,18 +339,19 @@ status_t QCameraStream_record::processRecordFrame(void *data)
 	nsecs_t timeStamp = nsecs_t(frame->video.video.frame->ts.tv_sec)*1000000000LL + \
                       frame->video.video.frame->ts.tv_nsec;
 
-  ALOGE("Send Video frame to services/encoder TimeStamp : %lld",timeStamp);
+  ALOGV("Send Video frame to services/encoder TimeStamp : %lld",timeStamp);
   mRecordedFrames[frame->video.video.idx] = *frame;
 
 #ifdef USE_ION
   struct ion_flush_data cache_inv_data;
-
+  int ion_fd;
+  ion_fd = frame->video.video.frame->ion_dev_fd;
   cache_inv_data.vaddr = (void *)frame->video.video.frame->buffer;
   cache_inv_data.fd = frame->video.video.frame->fd;
   cache_inv_data.handle = frame->video.video.frame->fd_data.handle;
   cache_inv_data.length = frame->video.video.frame->ion_alloc.len;
 
-  if (mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_CACHES) < 0)
+  if (mHalCamCtrl->cache_ops(ion_fd, &cache_inv_data, ION_IOC_CLEAN_CACHES) < 0)
     ALOGE("%s: Cache clean for Video buffer %p fd = %d failed", __func__,
       cache_inv_data.vaddr, cache_inv_data.fd);
 #endif
@@ -363,7 +379,7 @@ status_t QCameraStream_record::processRecordFrame(void *data)
 //Record Related Functions
 status_t QCameraStream_record::initEncodeBuffers()
 {
-  ALOGE("%s : BEGIN",__func__);
+  ALOGV("%s : BEGIN",__func__);
   status_t ret = NO_ERROR;
   const char *pmem_region;
   uint32_t frame_len;
@@ -388,19 +404,13 @@ status_t QCameraStream_record::initEncodeBuffers()
     height = dim.video_height;
   }
   num_planes = 2;
-
-
   planes[0] = dim.video_frame_offset.mp[0].len;
   planes[1] = dim.video_frame_offset.mp[1].len;
-  // look like HTC changed the dimension structure and removed the frame length
-  // this works for 720p
-  frame_len = planes[0]+planes[1]+2048; //dim.video_frame_offset.frame_len;
-
-ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
+  frame_len = dim.video_frame_offset.frame_len;
 
   buf_cnt = VIDEO_BUFFER_COUNT;
   if(mHalCamCtrl->isLowPowerCamcorder()) {
-    ALOGE("%s: lower power camcorder selected", __func__);
+    ALOGV("%s: lower power camcorder selected", __func__);
     buf_cnt = VIDEO_BUFFER_COUNT_LOW_POWER_CAMCORDER;
   }
     recordframes = new msm_frame[buf_cnt];
@@ -416,6 +426,11 @@ ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
 					 buf_cnt * sizeof(mm_camera_mp_buf_t));
 
     memset(&mHalCamCtrl->mRecordingMemory, 0, sizeof(mHalCamCtrl->mRecordingMemory));
+    for (int i=0; i<MM_CAMERA_MAX_NUM_FRAMES;i++) {
+        mHalCamCtrl->mRecordingMemory.main_ion_fd[i] = -1;
+        mHalCamCtrl->mRecordingMemory.fd[i] = -1;
+    }
+
     mHalCamCtrl->mRecordingMemory.buffer_count = buf_cnt;
 
 		mHalCamCtrl->mRecordingMemory.size = frame_len;
@@ -423,8 +438,8 @@ ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
 
     for (int cnt = 0; cnt < mHalCamCtrl->mRecordingMemory.buffer_count; cnt++) {
 #ifdef USE_ION
-      // allocate from the iommu heap
-      if(mHalCamCtrl->allocate_ion_memory(&mHalCamCtrl->mRecordingMemory, cnt, ION_CP_MM_HEAP_ID) < 0) {
+      if(mHalCamCtrl->allocate_ion_memory(&mHalCamCtrl->mRecordingMemory, cnt,
+        ((0x1 << CAMERA_ION_HEAP_ID) | (0x1 << CAMERA_ION_FALLBACK_HEAP_ID))) < 0) {
         ALOGE("%s ION alloc failed\n", __func__);
         return UNKNOWN_ERROR;
       }
@@ -460,12 +475,15 @@ ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
 	    recordframes[cnt].path = OUTPUT_TYPE_V;
       recordframes[cnt].fd_data = mHalCamCtrl->mRecordingMemory.ion_info_fd[cnt];
       recordframes[cnt].ion_alloc = mHalCamCtrl->mRecordingMemory.alloc[cnt];
+      recordframes[cnt].ion_dev_fd = mHalCamCtrl->mRecordingMemory.main_ion_fd[cnt];
 
-      //record_offset[cnt] =  mRecordHeap->mAlignedBufferSize * cnt;
+      if (NO_ERROR !=
+        mHalCamCtrl->sendMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_VIDEO, cnt,
+        recordframes[cnt].fd, mHalCamCtrl->mRecordingMemory.size, mCameraId,
+        CAM_SOCK_MSG_TYPE_FD_MAPPING))
+        ALOGE("%s: sending mapping data Msg Failed", __func__);
 
-	    //record_buffers_tracking_flag[cnt] = false;
-	    //record_offset[cnt] =  0;
-	    ALOGE ("initRecord :  record heap , video buffers  buffer=%lu fd=%d y_off=%d cbcr_off=%d\n",
+      ALOGV("initRecord :  record heap , video buffers  buffer=%lu fd=%d y_off=%d cbcr_off=%d\n",
 		    (unsigned long)recordframes[cnt].buffer, recordframes[cnt].fd, recordframes[cnt].y_off,
 		    recordframes[cnt].cbcr_off);
 	    //mNumRecordFrames++;
@@ -495,7 +513,7 @@ ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
     mRecordBuf.video.video.num = mHalCamCtrl->mRecordingMemory.buffer_count;//kRecordBufferCount;
     //mRecordBuf.video.video.frame_offset = &record_offset[0];
     //mRecordBuf.video.video.frame = &recordframes[0];
-    ALOGE("%s : END",__func__);
+    ALOGV("%s : END",__func__);
     return NO_ERROR;
 }
 
@@ -542,7 +560,7 @@ void QCameraStream_record::debugShowVideoFPS() const
   nsecs_t diff = now - mLastFpsTime;
   if (diff > ms2ns(250)) {
     mFps =  ((mFrameCount - mLastFrameCount) * float(s2ns(1))) / diff;
-    ALOGI("Video Frames Per Second: %.4f", mFps);
+    ALOGV("Video Frames Per Second: %.4f", mFps);
     mLastFpsTime = now;
     mLastFrameCount = mFrameCount;
   }
