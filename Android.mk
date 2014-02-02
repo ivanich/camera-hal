@@ -131,7 +131,7 @@ endif
 
 #Enable only to compile new interafece and HAL files.
 ifeq ($(V4L2_BASED_LIBCAM),true)
-#include $(LOCAL_PATH1)/QCamera/Android.mk
+include $(LOCAL_PATH1)/QCamera/Android.mk
 endif
 
 endif # USE_CAMERA_STUB

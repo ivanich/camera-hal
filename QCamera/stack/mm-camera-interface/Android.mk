@@ -24,13 +24,13 @@ LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/../common \
     $(LOCAL_PATH)/../../../
 
-ifneq ($(strip $(USE_BIONIC_HEADER)),true)
+#ifneq ($(strip $(USE_BIONIC_HEADER)),true)
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include
 LOCAL_C_INCLUDES += $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr/include/media
 LOCAL_ADDITIONAL_DEPENDENCIES := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ/usr
-endif
+#endif
 
-LOCAL_C_INCLUDES+= hardware/qcom/media/mm-core/inc
+LOCAL_C_INCLUDES+= hardware/qcom/media-caf/mm-core/inc
 LOCAL_CFLAGS += -include bionic/libc/include/sys/socket.h
 LOCAL_CFLAGS += -include bionic/libc/include/sys/un.h
 
