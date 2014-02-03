@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -10,7 +10,7 @@ met:
       copyright notice, this list of conditions and the following
       disclaimer in the documentation and/or other materials provided
       with the distribution.
-    * Neither the name of The Linux Foundation nor the names of its
+    * Neither the name of Code Aurora Forum, Inc. nor the names of its
       contributors may be used to endorse or promote products derived
       from this software without specific prior written permission.
 
@@ -281,8 +281,6 @@ extern int32_t mm_camera_stream_fsm_fn_vtbl (mm_camera_obj_t * my_obj,
 extern const char *mm_camera_util_get_dev_name(mm_camera_obj_t * my_obj);
 extern int32_t mm_camera_util_s_ctrl( int32_t fd,
                                             uint32_t id, int32_t value);
-extern int32_t mm_camera_util_private_s_ctrl( int32_t fd,
-                                            uint32_t id, int32_t value);
 extern int32_t mm_camera_util_g_ctrl( int32_t fd,
                                             uint32_t id, int32_t *value);
 extern int32_t mm_camera_ch_fn(mm_camera_obj_t * my_obj,
@@ -348,6 +346,7 @@ extern int mm_camera_poll_send_ch_event(mm_camera_obj_t * my_obj, mm_camera_even
 extern void mm_camera_msm_proc_ch_event(mm_camera_obj_t *my_obj, mm_camera_event_t *event);
 extern void mm_camera_dispatch_app_event(mm_camera_obj_t *my_obj, mm_camera_event_t *event);
 extern void mm_camera_dispatch_buffered_frames(mm_camera_obj_t *my_obj, mm_camera_channel_type_t ch_type);
+extern void mm_camera_histo_mmap(mm_camera_obj_t * my_obj, mm_camera_event_t *evt);
 extern void mm_camera_check_pending_zsl_frames(mm_camera_obj_t *my_obj,
                                         mm_camera_channel_type_t ch_type);
 extern int mm_camera_ch_util_get_num_stream(mm_camera_obj_t * my_obj,mm_camera_channel_type_t ch_type);

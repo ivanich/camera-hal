@@ -37,6 +37,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <poll.h>
 #include "mm_camera_interface2.h"
 #include "mm_camera.h"
+#include <stddef.h>
+#include <linux/media.h>
 
 #define SET_PARM_BIT32(parm, parm_arr) \
     (parm_arr[parm/32] |= (1<<(parm%32)))

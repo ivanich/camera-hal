@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -10,7 +10,7 @@ met:
       copyright notice, this list of conditions and the following
       disclaimer in the documentation and/or other materials provided
       with the distribution.
-    * Neither the name of The Linux Foundation nor the names of its
+    * Neither the name of Code Aurora Forum, Inc. nor the names of its
       contributors may be used to endorse or promote products derived
       from this software without specific prior written permission.
 
@@ -192,7 +192,6 @@ int mm_camera_read_msm_frame(mm_camera_obj_t * my_obj,
                         mm_camera_stream_t *stream)
 {
     int idx = -1, rc = MM_CAMERA_OK;
-    uint32_t i = 0;
     struct v4l2_buffer vb;
     struct v4l2_plane planes[VIDEO_MAX_PLANES];
 
@@ -200,23 +199,12 @@ int mm_camera_read_msm_frame(mm_camera_obj_t * my_obj,
     vb.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
     vb.memory = V4L2_MEMORY_USERPTR;
     vb.m.planes = &planes[0];
-    vb.length = stream->fmt.fmt.pix_mp.num_planes;
 
     CDBG("%s: VIDIOC_DQBUF ioctl call\n", __func__);
     rc = ioctl(stream->fd, VIDIOC_DQBUF, &vb);
     if (rc < 0)
         return idx;
     idx = vb.index;
-    for(i = 0; i < vb.length; i++) {
-        CDBG("%s plane %d addr offset: %d data offset:%d\n",
-             __func__, i, vb.m.planes[i].reserved[0],
-             vb.m.planes[i].data_offset);
-        stream->frame.frame[idx].planes[i].reserved[0] =
-            vb.m.planes[i].reserved[0];
-        stream->frame.frame[idx].planes[i].data_offset =
-            vb.m.planes[i].data_offset;
-    }
-
     stream->frame.frame[idx].frame.frame_id = vb.sequence;
     stream->frame.frame[idx].frame.ts.tv_sec  = vb.timestamp.tv_sec;
     stream->frame.frame[idx].frame.ts.tv_nsec = vb.timestamp.tv_usec * 1000;
@@ -252,26 +240,8 @@ int32_t mm_camera_util_s_ctrl( int32_t fd,  uint32_t id, int32_t value)
     rc = ioctl (fd, VIDIOC_S_CTRL, &control);
 
     if(rc) {
-        CDBG("%s: fd=%d, S_CTRL, id=0x%x, value = 0x%x, rc = %ld\n",
-                 __func__, fd, id, (uint32_t)value, rc);
-        rc = MM_CAMERA_E_GENERAL;
-    }
-    return rc;
-}
-
-int32_t mm_camera_util_private_s_ctrl(int32_t fd,  uint32_t id, int32_t value)
-{
-    int rc = MM_CAMERA_OK;
-    struct msm_camera_v4l2_ioctl_t v4l2_ioctl;
-
-    memset(&v4l2_ioctl, 0, sizeof(v4l2_ioctl));
-    v4l2_ioctl.id = id;
-    v4l2_ioctl.ioctl_ptr = value;
-    rc = ioctl (fd, MSM_CAM_V4L2_IOCTL_PRIVATE_S_CTRL, &v4l2_ioctl);
-
-    if(rc) {
-        CDBG_ERROR("%s: fd=%d, S_CTRL, id=0x%x, value = 0x%x, rc = %ld\n",
-                 __func__, fd, id, (uint32_t)value, rc);
+//        CDBG("%s: fd=%d, S_CTRL, id=0x%x, value = 0x%x, rc = %ld\n",
+//                 __func__, fd, id, (uint32_t)value, rc);
         rc = MM_CAMERA_E_GENERAL;
     }
     return rc;
@@ -315,14 +285,6 @@ static uint32_t mm_camera_util_get_v4l2_fmt(cam_format_t fmt,
         val= V4L2_PIX_FMT_NV61;
         *num_planes = 2;
         break;
-    case CAMERA_YUV_422_YUYV:
-        val= V4L2_PIX_FMT_YUYV;
-        *num_planes = 1;
-        break;
-    case CAMERA_YUV_420_YV12:
-        val= V4L2_PIX_FMT_NV12;
-        *num_planes = 3;
-         break;
     default:
         val = 0;
         *num_planes = 0;
@@ -432,7 +394,7 @@ static int mm_camera_stream_util_request_buf(mm_camera_obj_t * my_obj,
         __func__, stream->fd, rc);
       goto end;
     }
-    ALOGV("%s: stream fd=%d, ioctl VIDIOC_REQBUFS: memtype = %d, num_frames = %d, rc=%d\n",
+    ALOGE("%s: stream fd=%d, ioctl VIDIOC_REQBUFS: memtype = %d, num_frames = %d, rc=%d\n",
         __func__, stream->fd, bufreq.memory, bufreq.count, rc);
 
 end:
@@ -455,9 +417,9 @@ static int mm_camera_stream_util_enqueue_buf(mm_camera_obj_t * my_obj,
 
     for(i = 0; i < vbuf->num; i++){
         int idx = vbuf->buf.mp[i].idx;
-        ALOGV("%s: enqueue buf index = %d\n",__func__, idx);
+        ALOGE("%s: enqueue buf index = %d\n",__func__, idx);
         if(idx < MM_CAMERA_MAX_NUM_FRAMES) {
-            ALOGV("%s: stream_fd = %d, frame_fd = %d, frame ID = %d, offset = %d\n",
+            ALOGE("%s: stream_fd = %d, frame_fd = %d, frame ID = %d, offset = %d\n",
                      __func__, stream->fd, stream->frame.frame[i].frame.fd,
                      idx, stream->frame.frame_offset[idx]);
             rc = mm_camera_stream_qbuf(my_obj, stream, stream->frame.frame[idx].idx);
@@ -888,7 +850,7 @@ int32_t mm_camera_stream_fsm_fn_vtbl (mm_camera_obj_t * my_obj,
                    mm_camera_stream_t *stream,
                    mm_camera_state_evt_type_t evt, void *val)
 {
-    CDBG("%s: stream fd=%d, type = %d, state=%d, evt\n",
+    CDBG("%s: stream fd=%d, type = %d, state=%d, evt=%d\n",
                  __func__, stream->fd, stream->stream_type, stream->state, evt);
     return mm_camera_stream_fsm_fn[stream->state] (my_obj, stream, evt, val);
 }

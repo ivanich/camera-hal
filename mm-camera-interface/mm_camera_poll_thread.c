@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011, The Linux Foundation. All rights reserved.
+Copyright (c) 2011, Code Aurora Forum. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -10,7 +10,7 @@ met:
       copyright notice, this list of conditions and the following
       disclaimer in the documentation and/or other materials provided
       with the distribution.
-    * Neither the name of The Linux Foundation nor the names of its
+    * Neither the name of Code Aurora Forum, Inc. nor the names of its
       contributors may be used to endorse or promote products derived
       from this software without specific prior written permission.
 
@@ -75,7 +75,6 @@ static int32_t mm_camera_poll_sig(mm_camera_poll_thread_t *poll_cb,
     cmd_evt.cmd = cmd;
     int len;
     CDBG("%s: begin", __func__);
-
     pthread_mutex_lock(&poll_cb->mutex);
     /* reset the statue to false */
     poll_cb->status = FALSE;
@@ -88,17 +87,9 @@ static int32_t mm_camera_poll_sig(mm_camera_poll_thread_t *poll_cb,
     }
     CDBG("%s: begin IN mutex write done, len = %d", __func__, len);
     /* wait till worker task gives positive signal */
-    while (!poll_cb->status) {
-        int rc;
-        struct timespec ts;
-        clock_gettime(CLOCK_REALTIME, &ts);
-        ts.tv_sec += 2;
-        CDBG("%s: wait", __func__);
-        rc = pthread_cond_timedwait(&poll_cb->cond_v, &poll_cb->mutex, &ts);
-        if (rc) {
-            ALOGV("%s: error on pthread_cond_timedwait: %s", __func__, strerror(rc));
-            break;
-        }
+    if(FALSE == poll_cb->status) {
+      CDBG("%s: wait", __func__);
+        pthread_cond_wait(&poll_cb->cond_v, &poll_cb->mutex);
     }
     /* done */
     pthread_mutex_unlock(&poll_cb->mutex);
@@ -307,17 +298,8 @@ int mm_camera_poll_start(mm_camera_obj_t * my_obj,  mm_camera_poll_thread_t *pol
     pthread_mutex_lock(&poll_cb->mutex);
     poll_cb->status = 0;
     pthread_create(&poll_cb->data.pid, NULL, mm_camera_poll_thread, (void *)poll_cb);
-    while (!poll_cb->status) {
-        int rc;
-        struct timespec ts;
-
-        clock_gettime(CLOCK_REALTIME, &ts);
-        ts.tv_sec += 2;
-        rc = pthread_cond_timedwait(&poll_cb->cond_v, &poll_cb->mutex, &ts);
-        if (rc) {
-            ALOGV("%s: error on pthread_cond_timedwait: %s", __func__, strerror(rc));
-            break;
-        }
+    if(!poll_cb->status) {
+        pthread_cond_wait(&poll_cb->cond_v, &poll_cb->mutex);
     }
     pthread_mutex_unlock(&poll_cb->mutex);
     return MM_CAMERA_OK;
@@ -340,10 +322,6 @@ int mm_camera_poll_thread_add_ch(mm_camera_obj_t * my_obj, int ch_type)
     mm_camera_sig_evt_t cmd;
     int len;
 
-    if(poll_cb->data.used == 1){
-        CDBG_ERROR("%s : Thread is Active",__func__);
-        return MM_CAMERA_OK;
-    }
     CDBG("Run thread for ch_type = %d ",ch_type);
     cmd.cmd = MM_CAMERA_PIPE_CMD_ADD_CH;
     poll_cb->data.ch_type = ch_type;
@@ -361,10 +339,6 @@ int mm_camera_poll_thread_del_ch(mm_camera_obj_t * my_obj, int ch_type)
     mm_camera_sig_evt_t cmd;
     int len;
 
-    if(poll_cb->data.used == 0){
-        CDBG_ERROR("%s : Thread is Not Active",__func__);
-        return MM_CAMERA_OK;
-    }
     CDBG("Stop thread for ch_type = %d ",ch_type);
     cmd.cmd = MM_CAMERA_PIPE_CMD_DEL_CH;
     poll_cb->data.ch_type = (mm_camera_channel_type_t)ch_type;
@@ -409,7 +383,7 @@ int mm_camera_poll_thread_launch(mm_camera_obj_t * my_obj, int ch_type)
         poll_cb->data.poll_type = MM_CAMERA_POLL_TYPE_EVT;
     }
 
-    ALOGV("%s: ch_type = %d, poll_type = %d, read fd = %d, write fd = %d",
+    ALOGE("%s: ch_type = %d, poll_type = %d, read fd = %d, write fd = %d",
          __func__, ch_type, poll_cb->data.poll_type,
          poll_cb->data.pfds[0], poll_cb->data.pfds[1]);
     /* launch the thread */
