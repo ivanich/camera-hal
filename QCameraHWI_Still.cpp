@@ -1438,7 +1438,7 @@ encodeData(mm_camera_ch_data_buf_t* recvd_frame,
         /*TBD: Move JPEG handling to the mm-camera library */
         ALOGD("Setting callbacks, initializing encoder and start encoding.");
         ALOGD(" Passing my obj: %x", (unsigned int) this);
-        set_callbacks(snapshot_jpeg_fragment_cb, snapshot_jpeg_cb, this) ; //, mHalCamCtrl->mJpegMemory.camera_memory[0]->data, &mJpegOffset);
+        set_callbacks(snapshot_jpeg_fragment_cb, snapshot_jpeg_cb, this);//, mHalCamCtrl->mJpegMemory.camera_memory[0]->data, &mJpegOffset);
         mm_jpeg_encoder_init();
         mm_jpeg_encoder_setMainImageQuality(mHalCamCtrl->getJpegQuality());
 
@@ -1468,6 +1468,16 @@ encodeData(mm_camera_ch_data_buf_t* recvd_frame,
                 crop.in2_h = mPictureHeight;
             }
         }
+        if (isFullSizeLiveshot()) {
+            /* if HAl changed full size live snapshot picture size due to VFE limitation,
+                 Need to rescale picture size to what ui defines */
+              if (mHalCamCtrl->mPictureWidth_ui != mPictureWidth ||
+                  mHalCamCtrl->mPictureHeight_ui != mPictureHeight) {
+                  crop.out2_w = mHalCamCtrl->mPictureWidth_ui;
+                  crop.out2_h = mHalCamCtrl->mPictureHeight_ui;
+              }
+        }
+
         main_crop_offset.x=mCrop.snapshot.main_crop.left;
         main_crop_offset.y=mCrop.snapshot.main_crop.top;
         /*Thumbnail image*/

@@ -653,6 +653,7 @@ private:
 	QCameraStream       *mStreamLiveSnap;
 
     cam_ctrl_dimension_t mDimension;
+    int  mPictureWidth_ui, mPictureHeight_ui;
     int  previewWidth, previewHeight;
     int  videoWidth, videoHeight;
     int  maxSnapshotWidth, maxSnapshotHeight;
