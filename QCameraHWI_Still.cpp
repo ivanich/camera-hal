@@ -1224,6 +1224,7 @@ takePictureLiveshot(mm_camera_ch_data_buf_t* recvd_frame,
 {
     status_t ret = NO_ERROR;
     common_crop_t crop_info;
+    int mJpegMaxSize;
     //common_crop_t crop;
     uint32_t aspect_ratio;
     camera_notify_callback notifyCb;
@@ -1257,6 +1258,8 @@ takePictureLiveshot(mm_camera_ch_data_buf_t* recvd_frame,
     ALOGI("%s:Passed thumbnail size: %d X %d", __func__,
          dim->ui_thumbnail_width, dim->ui_thumbnail_height);
 
+    mJpegMaxSize = mPictureWidth * mPictureHeight * 1.5;
+
     mPictureWidth = dim->picture_width;
     mPictureHeight = dim->picture_height;
     mThumbnailWidth = dim->ui_thumbnail_width;
@@ -1278,7 +1281,7 @@ takePictureLiveshot(mm_camera_ch_data_buf_t* recvd_frame,
     }
     crop_info.out1_w = mThumbnailWidth;
     crop_info.out1_h = mThumbnailHeight;
-    ret = encodeData(recvd_frame, &crop_info, frame_len, 0);
+    ret = encodeData(recvd_frame, &crop_info, mJpegMaxSize, 0);
     if (ret != NO_ERROR) {
         ALOGE("%s: Failure configuring JPEG encoder", __func__);
 
