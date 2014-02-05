@@ -375,8 +375,8 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
                   CAMERA_SET_PARM_PREVIEW_FORMAT, sizeof(uint32_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_DIS_ENABLE:
-      return mm_camera_send_native_ctrl_cmd(my_obj,
-                  CAMERA_SET_DIS_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
+      return 0;// mm_camera_send_native_ctrl_cmd(my_obj,
+                 // CAMERA_SET_DIS_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_FULL_LIVESHOT: {
       my_obj->full_liveshot = *((int *)(parm->p_value));
@@ -418,7 +418,7 @@ static int32_t mm_camera_send_native_ctrl_cmd(mm_camera_obj_t * my_obj,
     ctrl_cmd.timeout_ms = 1000;
     ctrl_cmd.value = value;
     ctrl_cmd.status = CAM_CTRL_SUCCESS;
-    rc = mm_camera_util_private_s_ctrl(my_obj->ctrl_fd, MSM_V4L2_PID_CTRL_CMD,
+    rc = mm_camera_util_s_ctrl(my_obj->ctrl_fd, MSM_V4L2_PID_CTRL_CMD,
                                                                             (int)&ctrl_cmd);
     CDBG("%s: type=%d, rc = %d, status = %d\n",
                 __func__, type, rc, ctrl_cmd.status);
@@ -441,7 +441,7 @@ static int32_t mm_camera_send_native_ctrl_timeout_cmd(mm_camera_obj_t * my_obj,
     ctrl_cmd.timeout_ms = timeout;
     ctrl_cmd.value = value;
     ctrl_cmd.status = CAM_CTRL_SUCCESS;
-    rc = mm_camera_util_private_s_ctrl(my_obj->ctrl_fd, MSM_V4L2_PID_CTRL_CMD,
+    rc = mm_camera_util_s_ctrl(my_obj->ctrl_fd, MSM_V4L2_PID_CTRL_CMD,
         (int)&ctrl_cmd);
     CDBG("%s: type=%d, rc = %d, status = %d\n",
         __func__, type, rc, ctrl_cmd.status);
@@ -590,8 +590,8 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
     }
         break;
     case MM_CAMERA_PARM_MAX_HFR_MODE:
-        return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_MAX_HFR_MODE,
-                sizeof(camera_hfr_mode_t), (void *)parm->p_value);
+        return 0;// mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_MAX_HFR_MODE,
+                //sizeof(camera_hfr_mode_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_FOCAL_LENGTH:
         return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_FOCAL_LENGTH,
                      sizeof(focus_distances_info_t), (void *)parm->p_value);
@@ -878,7 +878,7 @@ int32_t mm_camera_action_start(mm_camera_obj_t *my_obj,
             break;
         case MM_CAMERA_OPS_PREPARE_SNAPSHOT:
             send_on_off_evt = 0;
-            rc = mm_camera_send_native_ctrl_timeout_cmd(my_obj,CAMERA_PREPARE_SNAPSHOT, 0, NULL, 2000);
+            rc = mm_camera_send_native_ctrl_cmd(my_obj,CAMERA_PREPARE_SNAPSHOT, 0, NULL);
             CDBG("%s: prepare snapshot done opcode = %d, rc= %d\n", __func__, opcode, rc);
             break;
         default:
@@ -1008,7 +1008,7 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj,
 	ALOGV("%s:  2\n", __func__);
 
     /* open domain socket*/
-    n_try=MM_CAMERA_DEV_OPEN_TRIES;
+/*    n_try=MM_CAMERA_DEV_OPEN_TRIES;
     do{
         n_try--;
         my_obj->ds_fd = mm_camera_socket_create(my_obj->my_id, MM_CAMERA_SOCK_TYPE_UDP); // TODO: UDP for now, change to TCP
@@ -1031,7 +1031,7 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj,
         my_obj->ctrl_fd = -1;
         return -MM_CAMERA_E_GENERAL;
     }
-
+*/
     /* set ctrl_fd to be the mem_mapping fd */
     rc =  mm_camera_util_s_ctrl(my_obj->ctrl_fd,
                         MSM_V4L2_PID_MMAP_INST, 0);
@@ -1103,7 +1103,7 @@ int32_t mm_camera_close(mm_camera_obj_t *my_obj)
         my_obj->ctrl_fd = 0;
     }
     if(my_obj->ds_fd > 0) {
-        mm_camera_socket_close(my_obj->ds_fd);
+//        mm_camera_socket_close(my_obj->ds_fd);
         my_obj->ds_fd = 0;
     }
     return MM_CAMERA_OK;
@@ -1132,5 +1132,6 @@ void mm_camera_ch_release(mm_camera_obj_t *my_obj, mm_camera_channel_type_t ch_t
 
 int32_t mm_camera_sendmsg(mm_camera_obj_t *my_obj, void *msg, uint32_t buf_size, int sendfd)
 {
-    return mm_camera_socket_sendmsg(my_obj->ds_fd, msg, buf_size, sendfd);
+return 1;
+//    return mm_camera_socket_sendmsg(my_obj->ds_fd, msg, buf_size, sendfd);
 }
