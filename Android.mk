@@ -41,7 +41,8 @@ LOCAL_C_INCLUDES += \
     $(TARGET_OUT_HEADERS)/mm-camera \
     $(TARGET_OUT_HEADERS)/mm-camera/common \
     $(TARGET_OUT_HEADERS)/mm-still \
-    $(TARGET_OUT_HEADERS)/mm-still/jpeg
+    $(TARGET_OUT_HEADERS)/mm-still/jpeg \
+    $(TARGET_OUT_HEADERS)/mm-still/mm-omx
 
 ifeq ($(TARGET_BOARD_PLATFORM),msm8660)
 LOCAL_C_INCLUDES += $(TARGET_OUT_HEADERS)/mm-core/omxcore
@@ -64,7 +65,7 @@ ifeq ($(TARGET_BOARD_PLATFORM),msm8660)
 LOCAL_SRC_FILES := mm_camera_interface2.c mm_camera_stream.c \
                    mm_camera_channel.c mm_camera.c \
                    mm_camera_poll_thread.c mm_camera_notify.c \
-                   mm_camera_helper.c mm_jpeg_encoder.c \
+                   mm_camera_helper.c mm_omx_jpeg_encoder.c \
                    QCameraHAL.cpp QCameraHWI_Parm.cpp \
                    QCameraHWI.cpp QCameraHWI_Preview.cpp \
                    QCameraHWI_Record.cpp QCameraHWI_Still.cpp \

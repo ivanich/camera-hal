@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -48,10 +48,14 @@ typedef struct omx_jpeg_encode_params_t {
     int hasThumbnail;
     cam_format_t main_format;
     cam_format_t thumbnail_format;
+    const uint8_t * mobicat_data;
+    int32_t mobicat_data_length;
+    int hasmobicat;
+
 }omx_jpeg_encode_params;
 
 int8_t omxJpegOpen();
-int8_t omxJpegStart();
+int8_t omxJpegStart(uint8_t hw_encode_enable);
 int8_t omxJpegEncode(omx_jpeg_encode_params *encode_params);
 int8_t omxJpegEncodeNext(omx_jpeg_encode_params *encode_params);
 void omxJpegFinish();
@@ -63,8 +67,8 @@ int8_t mm_jpeg_encoder_setThumbnailQuality(uint32_t quality);
 int8_t mm_jpeg_encoder_setRotation(int rotation,int isZSL);
 void jpege_set_phy_offset(uint32_t a_phy_offset);
 int8_t mm_jpeg_encoder_get_buffer_offset(uint32_t width, uint32_t height,
-    uint32_t* p_y_offset, uint32_t* p_cbcr_offset,
-    uint32_t* p_buf_size,uint8_t *num_planes,
+    int32_t* p_y_offset, int32_t* p_cbcr_offset,
+    int32_t* p_buf_size,uint8_t *num_planes,
     uint32_t planes[]);
 typedef void (*jpegfragment_callback_t)(uint8_t * buff_ptr,
     uint32_t buff_size, void* user_data);

@@ -284,7 +284,7 @@ end:
     }
     else if (mNumOfSnapshot == mNumOfRecievedJPEG )  { /* finished */
     ALOGD("%s: Before omxJpegFinish", __func__);
-//    omxJpegFinish();
+    omxJpegFinish();
     ALOGD("%s: After omxJpegFinish", __func__);
 //    {
 
@@ -752,7 +752,7 @@ initSnapshotBuffers(cam_ctrl_dimension_t *dim, int num_of_buf)
      * the value of rotation.*/
     mHalCamCtrl->setJpegRotation(isZSLMode());
     rotation = mHalCamCtrl->getJpegRotation();
-    mm_jpeg_encoder_get_buffer_offset( dim->picture_width, dim->picture_height,&y_off, &cbcr_off, &frame_len,&num_planes, planes);
+//    mm_jpeg_encoder_get_buffer_offset( dim->picture_width, dim->picture_height,&y_off, &cbcr_off, &frame_len,&num_planes, planes);
 	if (mHalCamCtrl->initHeapMem (&mHalCamCtrl->mJpegMemory, 1, frame_len, 0, 0/*cbcr_off*/,
                                   MSM_PMEM_MAX, NULL, NULL, num_planes, planes) < 0) {
 		ALOGE("%s: Error allocating JPEG memory", __func__);
@@ -767,9 +767,9 @@ initSnapshotBuffers(cam_ctrl_dimension_t *dim, int num_of_buf)
 				mHalCamCtrl->releaseHeapMem(&mHalCamCtrl->mJpegMemory);
 				goto end;
 	};
-    mm_jpeg_encoder_get_buffer_offset( dim->ui_thumbnail_width, dim->ui_thumbnail_height,
-			&y_off, &cbcr_off, &frame_len,
-			&num_planes, planes);
+//    mm_jpeg_encoder_get_buffer_offset( dim->ui_thumbnail_width, dim->ui_thumbnail_height,
+//			&y_off, &cbcr_off, &frame_len,
+//			&num_planes, planes);
     if (mHalCamCtrl->initHeapMem(&mHalCamCtrl->mThumbnailMemory, num_of_buf,
 		    frame_len, y_off, cbcr_off, MSM_PMEM_THUMBNAIL, &mPostviewStreamBuf,
 		    &reg_buf.snapshot.thumbnail, num_planes, planes) < 0) {
@@ -1383,7 +1383,7 @@ encodeData(mm_camera_ch_data_buf_t* recvd_frame,
     uint8_t *thumbnail_buf;
     uint32_t thumbnail_fd;
 
-//    omx_jpeg_encode_params encode_params;
+    omx_jpeg_encode_params encode_params;
 
     /* If it's the only frame, we directly pass to encoder.
        If not, we'll queue it and check during next jpeg .
@@ -1430,9 +1430,9 @@ encodeData(mm_camera_ch_data_buf_t* recvd_frame,
         /*TBD: Move JPEG handling to the mm-camera library */
         ALOGD("Setting callbacks, initializing encoder and start encoding.");
         ALOGD(" Passing my obj: %x", (unsigned int) this);
-        set_callbacks(snapshot_jpeg_fragment_cb, snapshot_jpeg_cb, this);//, mHalCamCtrl->mJpegMemory.camera_memory[0]->data, &mJpegOffset);
-        mm_jpeg_encoder_init();
-        mm_jpeg_encoder_setMainImageQuality(mHalCamCtrl->getJpegQuality());
+        set_callbacks(snapshot_jpeg_fragment_cb, snapshot_jpeg_cb, this, mHalCamCtrl->mJpegMemory.camera_memory[0]->data, &mJpegOffset);
+//        mm_jpeg_encoder_init();
+//        mm_jpeg_encoder_setMainImageQuality(mHalCamCtrl->getJpegQuality());
 
         ALOGD("%s: Dimension to encode: main: %dx%d thumbnail: %dx%d", __func__,
              dimension.orig_picture_dx, dimension.orig_picture_dy,
@@ -1473,44 +1473,64 @@ encodeData(mm_camera_ch_data_buf_t* recvd_frame,
         main_crop_offset.x=mCrop.snapshot.main_crop.left;
         main_crop_offset.y=mCrop.snapshot.main_crop.top;
         /*Thumbnail image*/
-        if (!isFullSizeLiveshot()) {
-          crop.in1_w=mCrop.snapshot.thumbnail_crop.width; //dimension.thumbnail_width;
-          crop.in1_h=mCrop.snapshot.thumbnail_crop.height; // dimension.thumbnail_height;
-          if((width != 0) && (height != 0)) {
-              crop.out1_w=mThumbnailWidth;
-              crop.out1_h=mThumbnailHeight;
-          } else {
-              crop.out1_w = 0;
-              crop.out1_h = 0;
-          }
-          thumb_crop_offset.x=mCrop.snapshot.thumbnail_crop.left;
-          thumb_crop_offset.y=mCrop.snapshot.thumbnail_crop.top;
-//          ALOGD("mm_jpeg_encoder_encode: %x %x %x, %x %x %", postviewframe->buffer,postviewframe->fd,postviewframe->phy_offset,mainframe->buffer,mainframe->fd,mainframe->phy_offset);
-          mHalCamCtrl->setExifTags();
-          mHalCamCtrl->initExifData();
-          if (!mm_jpeg_encoder_encode((const cam_ctrl_dimension_t *)&dimension,
-                          (uint8_t *)postviewframe->buffer,
-                          postviewframe->fd,
-                          postviewframe->phy_offset,
-                          (uint8_t *)mainframe->buffer,
-                          mainframe->fd,
-                          mainframe->phy_offset,
-                          &crop,
-                          mHalCamCtrl->getExifData(),
-                          mHalCamCtrl->getExifTableNumEntries(),
-                          -1,
-                          &main_crop_offset,
-                          &thumb_crop_offset)){
-              ALOGE("%s: Failure! JPEG encoder returned error.", __func__);
-              ret = FAILED_TRANSACTION;
-              goto end;
-            }
+        crop.in1_w=mCrop.snapshot.thumbnail_crop.width; //dimension.thumbnail_width;
+        crop.in1_h=mCrop.snapshot.thumbnail_crop.height; // dimension.thumbnail_height;
+        if(isLiveSnapshot() || isFullSizeLiveshot() || isZSLMode()) {
+            crop.out1_w= mHalCamCtrl->thumbnailWidth;
+            crop.out1_h=  mHalCamCtrl->thumbnailHeight;
+            ALOGV("Thumbnail width= %d  height= %d for livesnapshot", crop.out1_w, crop.out1_h);
+        } else {
+            crop.out1_w = width;
+            crop.out1_h = height;
         }
+        thumb_crop_offset.x=mCrop.snapshot.thumbnail_crop.left;
+        thumb_crop_offset.y=mCrop.snapshot.thumbnail_crop.top;
 
-        /* Save the pointer to the frame sent for encoding. we'll need it to
-           tell kernel that we are done with the frame.*/
-        mCurrentFrameEncoded = recvd_frame;
-        setSnapshotState(SNAPSHOT_STATE_JPEG_ENCODING);
+        if (crop.out1_w > crop.out2_w || crop.out1_h > crop.out2_h) {
+            crop.out1_w = crop.out2_w;
+            crop.out1_h = crop.out2_h;
+        }
+        //update exif parameters in HAL
+        mHalCamCtrl->initExifData();
+
+        /*Fill in the encode parameters*/
+        encode_params.dimension = (const cam_ctrl_dimension_t *)&dimension;
+        //if (!isFullSizeLiveshot()) {
+            encode_params.thumbnail_buf = (uint8_t *)postviewframe->buffer;
+            encode_params.thumbnail_fd = postviewframe->fd;
+            encode_params.thumbnail_offset = postviewframe->phy_offset;
+            encode_params.thumb_crop_offset = &thumb_crop_offset;
+        //}
+        encode_params.snapshot_buf = (uint8_t *)mainframe->buffer;
+        encode_params.snapshot_fd = mainframe->fd;
+        encode_params.snapshot_offset = mainframe->phy_offset;
+        encode_params.scaling_params = &crop;
+        encode_params.exif_data = mHalCamCtrl->getExifData();
+        encode_params.exif_numEntries = mHalCamCtrl->getExifTableNumEntries();
+
+        if (isLiveSnapshot() && !isFullSizeLiveshot())
+            encode_params.a_cbcroffset = mainframe->cbcr_off;
+        else
+            encode_params.a_cbcroffset = -1;
+        encode_params.main_crop_offset = &main_crop_offset;
+
+            if (mDropThumbnail)
+            encode_params.hasThumbnail = 0;
+        else
+            encode_params.hasThumbnail = 1;
+        encode_params.thumb_crop_offset = &thumb_crop_offset;
+        encode_params.main_format = dimension.main_img_format;
+        encode_params.thumbnail_format = dimension.thumb_format;
+
+        if (!omxJpegEncode(&encode_params)){
+            ALOGE("%s: Failure! JPEG encoder returned error.", __func__);
+            ret = FAILED_TRANSACTION;
+            goto end;
+        }
+         /* Save the pointer to the frame sent for encoding. we'll need it to
+         tell kernel that we are done with the frame.*/
+         mCurrentFrameEncoded = recvd_frame;
+         setSnapshotState(SNAPSHOT_STATE_JPEG_ENCODING);
     }
 
 end:
@@ -2147,7 +2167,7 @@ void QCameraStream_Snapshot::stop(void)
         stopPolling();
         if(getSnapshotState() == SNAPSHOT_STATE_JPEG_ENCODING) {
             ALOGV("Destroy Jpeg Instance");
-            mm_jpeg_encoder_cancel();
+            omxJpegAbort();
         }
 
         /* Depending upon current state, we'll need to allocate-deallocate-deinit*/

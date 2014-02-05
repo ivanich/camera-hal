@@ -2475,7 +2475,7 @@ status_t QCameraHardwareInterface::setPictureSize(const CameraParameters& params
 
 status_t QCameraHardwareInterface::setJpegRotation(int isZsl) {
     int rotation = mParameters.getInt("rotation");
-    return mm_jpeg_encoder_setRotation(rotation);
+    return mm_jpeg_encoder_setRotation(rotation, isZsl);
 }
 
 int QCameraHardwareInterface::getJpegRotation(void) {
