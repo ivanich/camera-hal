@@ -20,7 +20,7 @@
 
 #define TRUE (1)
 #define FALSE (0)
-#define JPEG_EVENT_ERROR     2
+
 #define JPEG_EVENT_DONE      0
 #define JPEG_EVENT_THUMBNAIL_DROPPED 4
 

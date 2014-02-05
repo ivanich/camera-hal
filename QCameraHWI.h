@@ -41,8 +41,7 @@ extern "C" {
 //#include <camera_defs_i.h>
 #include <mm_camera_interface2.h>
 
-//#include "mm_jpeg_encoder.h"
-#include "mm_omx_jpeg_encoder.h"
+#include "mm_jpeg_encoder.h"
 
 } //extern C
 
@@ -658,7 +657,6 @@ private:
     cam_ctrl_dimension_t mDimension;
     int  mPictureWidth_ui, mPictureHeight_ui;
     int  previewWidth, previewHeight;
-    int  thumbnailWidth, thumbnailHeight;
     int  videoWidth, videoHeight;
     int  maxSnapshotWidth, maxSnapshotHeight;
     int  mPreviewFormat;
