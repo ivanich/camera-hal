@@ -278,7 +278,7 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
                     CAMERA_SET_PARM_FOCUS_RECT, sizeof(int32_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_AEC_ROI:
         return mm_camera_send_native_ctrl_cmd(my_obj,
-                    CAMERA_SET_PARM_AEC_ROI, sizeof(cam_set_aec_roi_t), (void *)parm->p_value);
+                    CAMERA_SET_PARM_AEC_ROI, sizeof(roi_info_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_AF_ROI:
         return mm_camera_send_native_ctrl_cmd(my_obj,
                     CAMERA_SET_PARM_AF_ROI, sizeof(roi_info_t), (void *)parm->p_value);
@@ -366,10 +366,10 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_ASD_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
 
-    case MM_CAMERA_PARM_RECORDING_HINT:
+/*    case MM_CAMERA_PARM_RECORDING_HINT:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_RECORDING_HINT, sizeof(uint32_t), (void *)parm->p_value);
-
+*/
     case MM_CAMERA_PARM_PREVIEW_FORMAT:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_PARM_PREVIEW_FORMAT, sizeof(uint32_t), (void *)parm->p_value);
@@ -384,7 +384,7 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
                   CAMERA_SET_FULL_LIVESHOT, sizeof(uint32_t), (void *)parm->p_value);
     }
 
-    case MM_CAMERA_PARM_LOW_POWER_MODE:
+/*    case MM_CAMERA_PARM_LOW_POWER_MODE:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_LOW_POWER_MODE, sizeof(uint32_t), (void *)parm->p_value);
 
@@ -392,7 +392,7 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
       CDBG("SM : %s : MM_CAMERA_PARM_CAF_TYPE value : %d",__func__,*((int *)(parm->p_value)));
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_PARM_CAF_TYPE, sizeof(int32_t), (void *)parm->p_value);
-
+*/
     case MM_CAMERA_PARM_HDR:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                         CAMERA_SET_PARM_HDR, sizeof(exp_bracketing_t), (void *)parm->p_value);
@@ -493,7 +493,7 @@ int32_t mm_camera_set_parm(mm_camera_obj_t * my_obj,
                             MM_CAMERA_STATE_EVT_SET_FMT, fmt);
         }
         break;
-    case MM_CAMERA_PARM_CHECK_AF_RETRY:
+/*    case MM_CAMERA_PARM_CHECK_AF_RETRY:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_CHECK_AF_RETRY,
                  0, (void *)NULL);
     case MM_CAMERA_PARM_LG_CAF_LOCK:
@@ -502,6 +502,7 @@ int32_t mm_camera_set_parm(mm_camera_obj_t * my_obj,
     case MM_CAMERA_PARM_INFORM_STARTPRVIEW:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_SET_INFORM_STARTPREVIEW,
                  0, (void *)NULL);
+*/
     default:
         rc = mm_camera_set_general_parm(my_obj, parm);
         break;
@@ -589,6 +590,7 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
              dim->width, dim->height);
     }
         break;
+
     case MM_CAMERA_PARM_MAX_HFR_MODE:
         return 0;// mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_MAX_HFR_MODE,
                 //sizeof(camera_hfr_mode_t), (void *)parm->p_value);
@@ -618,7 +620,7 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_ZOOMRATIOS,
                      sizeof(int16_t)*tbl->size, tbl->zoom_ratio_tbl);
     }
-    case MM_CAMERA_PARM_DEF_PREVIEW_SIZES: {
+/*    case MM_CAMERA_PARM_DEF_PREVIEW_SIZES: {
         default_sizes_tbl_t *tbl = (default_sizes_tbl_t*)parm->p_value;
         return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_DEF_PREVIEW_SIZES,
                      sizeof(struct camera_size_type)*tbl->tbl_size, tbl->sizes_tbl);
@@ -638,13 +640,14 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
         return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_DEF_HFR_SIZES,
                      sizeof(struct camera_size_type)*tbl->tbl_size, tbl->sizes_tbl);
     }
+*/
     case MM_CAMERA_PARM_OP_MODE:
         *((mm_camera_op_mode_type_t *)parm->p_value) = my_obj->op_mode;
         break;
     case MM_CAMERA_PARM_SNAPSHOT_BURST_NUM:
         *((int *)parm->p_value) = my_obj->snap_burst_num_by_user;
         break;
-    case MM_CAMERA_PARM_VFE_OUTPUT_ENABLE:
+/*    case MM_CAMERA_PARM_VFE_OUTPUT_ENABLE:
         *((int *)parm->p_value) = my_obj->properties.vfe_output_enable;
         break;
     case MM_CAMERA_PARM_LUX_IDX:
@@ -673,6 +676,7 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
     case MM_CAMERA_PARM_F_NUMBER:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_F_NUMBER,
                      sizeof(float), (void *)parm->p_value);
+*/
     default:
         /* needs to add more implementation */
         rc = -1;

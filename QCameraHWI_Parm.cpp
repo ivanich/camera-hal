@@ -127,7 +127,34 @@ static thumbnail_size_type thumbnail_sizes[] = {
 { 5006, 352, 288 }, //1.222222
 { 5461, 320, 240 }, //1.33333
 { 5006, 176, 144 }, //1.222222
+};
 
+static camera_size_type jpeg_thumbnail_sizes[]  = {
+{ 512, 288 },
+{ 480, 288 },
+{ 432, 288 },
+{ 512, 384 },
+{ 352, 288 },
+{ 640, 480},
+{0,0}
+};
+
+static camera_size_type default_preview_sizes[] = {
+  { 1920, 1088}, //1080p
+  { 1280, 720}, // 720P, reserved
+  { 960, 720}, // for panorama
+//  { 960, 544},
+  { 800, 480}, // WVGA
+//  { 768, 432},
+  { 720, 480},
+  { 640, 480}, // VGA
+  { 576, 432},
+  { 480, 320}, // HVGA
+  { 384, 288},
+  { 352, 288}, // CIF
+  { 320, 240}, // QVGA
+  { 240, 160}, // SQVGA
+  { 176, 144}, // QCIF
 };
 
 static struct camera_size_type zsl_picture_sizes[] = {
@@ -676,7 +703,7 @@ void QCameraHardwareInterface::loadTables()
 
     default_sizes_tbl_t thumbnail_sizes_tbl;
     thumbnail_sizes_tbl.tbl_size=thumbnail_sizes_count;
-    thumbnail_sizes_tbl.sizes_tbl=&default_thumbnail_sizes[0];
+    thumbnail_sizes_tbl.sizes_tbl=&jpeg_thumbnail_sizes[0];
     if(MM_CAMERA_OK != cam_config_get_parm(mCameraId,
                             MM_CAMERA_PARM_DEF_THUMB_SIZES, &thumbnail_sizes_tbl)){
         ALOGE("%s:Failed to get default thumbnail sizes",__func__);
@@ -999,7 +1026,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mDimension.ui_thumbnail_height =
             thumbnail_sizes[DEFAULT_THUMBNAIL_SETTING].height;
     mParameters.set(QCameraParameters::KEY_JPEG_THUMBNAIL_QUALITY, "90");
-    String8 valuesStr = create_sizes_str(default_thumbnail_sizes, thumbnail_sizes_count);
+    String8 valuesStr = create_sizes_str(jpeg_thumbnail_sizes, thumbnail_sizes_count);
     mParameters.set(QCameraParameters::KEY_SUPPORTED_JPEG_THUMBNAIL_SIZES,
                 valuesStr.string());
     // Define CAMERA_SMOOTH_ZOOM in Android.mk file , to enable smoothzoom
@@ -1275,7 +1302,7 @@ void QCameraHardwareInterface::initDefaultParameters()
             EXPOSURE_COMPENSATION_STEP);
 
     mParameters.set("num-snaps-per-shutter", 1);
-
+#if 0
     mParameters.set("capture-burst-captures-values", getZSLQueueDepth());
     mParameters.set("capture-burst-interval-supported", "true");
     mParameters.set("capture-burst-interval-max", BURST_INTREVAL_MAX); /*skip frames*/
@@ -1327,7 +1354,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     } else {
        mParameters.set(QCameraParameters::KEY_SINGLE_ISP_OUTPUT_ENABLED, "false");
     }
-
+#endif
     if (setParameters(mParameters) != NO_ERROR) {
         ALOGE("Failed to set default parameters?!");
     }
@@ -2734,8 +2761,8 @@ status_t QCameraHardwareInterface::setJpegThumbnailSize(const QCameraParameters&
 
     // Validate the picture size
     for (unsigned int i = 0; i < thumbnail_sizes_count; ++i) {
-       if (width == default_thumbnail_sizes[i].width
-         && height == default_thumbnail_sizes[i].height) {
+       if (width == jpeg_thumbnail_sizes[i].width
+         && height == jpeg_thumbnail_sizes[i].height) {
            thumbnailWidth = width;
            thumbnailHeight = height;
            mParameters.set(QCameraParameters::KEY_JPEG_THUMBNAIL_WIDTH, width);
@@ -3601,9 +3628,9 @@ status_t QCameraHardwareInterface::setPreviewSizeTable(void)
 
     /* Initialize table with default values */
     preview_size_table = default_preview_sizes;
-    preview_table_size = preview_sizes_count;
-
-
+//    preview_table_size = preview_sizes_count;
+    preview_table_size = sizeof(default_preview_sizes)/
+        sizeof(default_preview_sizes[0]);
     /* Get maximum preview size supported by sensor*/
     memset(&dim, 0, sizeof(mm_camera_dimension_t));
     ret = cam_config_get_parm(mCameraId,
@@ -3638,7 +3665,7 @@ end:
     mPreviewSizes = preview_size_table;
     /* Also remove the smallest preview (176x144) in the returned list, which occurs
      * last - it's broken */
-    mPreviewSizeCount = preview_table_size - i - 1;
+    mPreviewSizeCount = preview_table_size - i;
 
     return ret;
 }

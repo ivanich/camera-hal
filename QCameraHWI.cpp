@@ -237,7 +237,7 @@ QCameraHardwareInterface(int cameraId, int mode)
           return;
     }
 
-    loadTables();
+//    loadTables();
     /* Setup Picture Size and Preview size tables */
     setPictureSizeTable();
     ALOGV("%s: Picture table size: %d", __func__, mPictureSizeCount);
@@ -288,14 +288,14 @@ QCameraHardwareInterface(int cameraId, int mode)
         return;
     }
     mCameraState = CAMERA_STATE_READY;
-    libdnr = dlopen("libmorpho_noise_reduction.so", RTLD_NOW);
+/*    libdnr = dlopen("libmorpho_noise_reduction.so", RTLD_NOW);
     if (libdnr) {
         ALOGV("Open MM camera DL libmorpho_noise_reduction loaded at %p & %p ", libdnr);
         *(void **)&LINK_morpho_DNR_ProcessFrame = dlsym(libdnr, "LINK_mm_camera_morpho_noise_reduction");
     }
     else
         ALOGE("failed to open libmorpho_noise_reduction");
-
+*/
     ALOGV("QCameraHardwareInterface: X");
 }
 
