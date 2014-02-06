@@ -99,7 +99,7 @@ extern "C" {
 #define THUMBNAIL_WIDTH_STR "512"
 #define THUMBNAIL_HEIGHT_STR "384"
 #define THUMBNAIL_SMALL_HEIGHT 144
-
+#define JPEG_THUMBNAIL_SIZE_COUNT (sizeof(jpeg_thumbnail_sizes)/sizeof(camera_size_type))
 #define DONT_CARE_COORDINATE -1
 
 //for histogram stats
@@ -143,9 +143,9 @@ static camera_size_type default_preview_sizes[] = {
   { 1920, 1088}, //1080p
   { 1280, 720}, // 720P, reserved
   { 960, 720}, // for panorama
-//  { 960, 544},
+  { 960, 544},
   { 800, 480}, // WVGA
-//  { 768, 432},
+  { 768, 432},
   { 720, 480},
   { 640, 480}, // VGA
   { 576, 432},
@@ -185,6 +185,21 @@ static camera_size_type default_picture_sizes[] = {
   { 320, 240}, // QVGA
   { 176, 144} // QCIF
 };
+
+static camera_size_type supported_video_sizes[] = {
+  { 1920, 1088},// 1080p
+  { 1280, 720}, // 720p
+  { 960, 720},  // for panorama
+  { 800, 480},  // WVGA
+  { 768, 432},
+  { 720, 480},  // 480p
+  { 640, 480},  // VGA
+  { 480, 320},  // HVGA
+  { 352, 288},  // CIF
+  { 320, 240},  // QVGA
+  { 176, 144},  // QCIF
+};
+#define SUPPORTED_VIDEO_SIZES_COUNT (sizeof(supported_video_sizes)/sizeof(camera_size_type))
 
 static int iso_speed_values[] = {
     0, 1, 100, 200, 400, 800, 1600
@@ -671,7 +686,7 @@ bool QCameraHardwareInterface::getMaxPictureDimension(mm_camera_dimension_t *max
           maxDim->width, maxDim->height);
     return ret;
 }
-void QCameraHardwareInterface::loadTables()
+/*void QCameraHardwareInterface::loadTables()
 {
 
     bool ret = NO_ERROR;
@@ -721,7 +736,7 @@ void QCameraHardwareInterface::loadTables()
     }
     ALOGV("%s: X", __func__);
 }
-
+*/
 rat_t getRational(int num, int denom)
 {
     rat_t temp = {num, denom};
@@ -915,6 +930,7 @@ void QCameraHardwareInterface::initDefaultParameters()
 
     //set supported video sizes
     mParameters.set(QCameraParameters::KEY_SUPPORTED_VIDEO_SIZES, mVideoSizeValues.string());
+//    mParameters.set(QCameraParameters::KEY_SUPPORTED_VIDEO_SIZES, SUPPORTED_VIDEO_SIZES_COUNT);
 
     //set default video size to first one in supported table
     String8 vSize = create_sizes_str(&mVideoSizes[0], 1);
@@ -1397,7 +1413,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
 //    Mutex::Autolock l(&mLock);
     status_t rc, final_rc = NO_ERROR;
 
-    if ((rc = setPowerMode(params)))                    final_rc = rc;
+//    if ((rc = setPowerMode(params)))                    final_rc = rc;
     if ((rc = setPreviewSize(params)))                  final_rc = rc;
     if ((rc = setVideoSize(params)))                    final_rc = rc;
     if ((rc = setPictureSize(params)))                  final_rc = rc;
@@ -2620,7 +2636,7 @@ status_t QCameraHardwareInterface::setCameraMode(const QCameraParameters& params
         myMode = (camera_mode_t)(myMode & ~CAMERA_ZSL_MODE);
     }
 
-    return NO_ERROR;
+/*    return NO_ERROR;
 }
 
 status_t QCameraHardwareInterface::setPowerMode(const QCameraParameters& params) {
@@ -2647,6 +2663,7 @@ status_t QCameraHardwareInterface::setPowerMode(const QCameraParameters& params)
           value ? "Enabled" : "Disabled", value);
     native_set_parms(MM_CAMERA_PARM_LOW_POWER_MODE, sizeof(value),
                                                (void *)&value);
+*/
     return NO_ERROR;
 }
 
@@ -2760,7 +2777,7 @@ status_t QCameraHardwareInterface::setJpegThumbnailSize(const QCameraParameters&
     ALOGV("requested jpeg thumbnail size %d x %d", width, height);
 
     // Validate the picture size
-    for (unsigned int i = 0; i < thumbnail_sizes_count; ++i) {
+    for (unsigned int i = 0; i < JPEG_THUMBNAIL_SIZE_COUNT; ++i) {
        if (width == jpeg_thumbnail_sizes[i].width
          && height == jpeg_thumbnail_sizes[i].height) {
            thumbnailWidth = width;
@@ -3431,8 +3448,8 @@ status_t QCameraHardwareInterface::setPictureFormat(const QCameraParameters& par
 
 status_t QCameraHardwareInterface::setRecordingHintValue(const int32_t value)
 {
-    native_set_parms(MM_CAMERA_PARM_RECORDING_HINT, sizeof(value),
-                                           (void *)&value);
+//    native_set_parms(MM_CAMERA_PARM_RECORDING_HINT, sizeof(value),
+//                                           (void *)&value);
     if (value == true){
         native_set_parms(MM_CAMERA_PARM_CAF_ENABLE, sizeof(value),
                                            (void *)&value);
@@ -3742,8 +3759,8 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
     ALOGV("%s: E", __func__);
 
     /* Initialize table with default values */
-    video_table_size = video_sizes_count;
-    video_size_table = default_video_sizes;
+    video_table_size = SUPPORTED_VIDEO_SIZES_COUNT;
+    video_size_table = supported_video_sizes;
     mVideoSizes =
         (struct camera_size_type *)malloc(video_table_size *
                                            sizeof(struct camera_size_type));

@@ -387,12 +387,12 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
 /*    case MM_CAMERA_PARM_LOW_POWER_MODE:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_LOW_POWER_MODE, sizeof(uint32_t), (void *)parm->p_value);
-
+*/
     case MM_CAMERA_PARM_CAF_TYPE:
       CDBG("SM : %s : MM_CAMERA_PARM_CAF_TYPE value : %d",__func__,*((int *)(parm->p_value)));
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_PARM_CAF_TYPE, sizeof(int32_t), (void *)parm->p_value);
-*/
+
     case MM_CAMERA_PARM_HDR:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                         CAMERA_SET_PARM_HDR, sizeof(exp_bracketing_t), (void *)parm->p_value);
@@ -647,7 +647,7 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
     case MM_CAMERA_PARM_SNAPSHOT_BURST_NUM:
         *((int *)parm->p_value) = my_obj->snap_burst_num_by_user;
         break;
-/*    case MM_CAMERA_PARM_VFE_OUTPUT_ENABLE:
+    case MM_CAMERA_PARM_VFE_OUTPUT_ENABLE:
         *((int *)parm->p_value) = my_obj->properties.vfe_output_enable;
         break;
     case MM_CAMERA_PARM_LUX_IDX:
@@ -676,7 +676,7 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
     case MM_CAMERA_PARM_F_NUMBER:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_F_NUMBER,
                      sizeof(float), (void *)parm->p_value);
-*/
+
     default:
         /* needs to add more implementation */
         rc = -1;

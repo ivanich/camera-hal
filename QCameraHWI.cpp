@@ -237,7 +237,7 @@ QCameraHardwareInterface(int cameraId, int mode)
           return;
     }
 
-//    loadTables();
+    //loadTables();
     /* Setup Picture Size and Preview size tables */
     setPictureSizeTable();
     ALOGV("%s: Picture table size: %d", __func__, mPictureSizeCount);
