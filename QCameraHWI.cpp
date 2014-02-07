@@ -2695,6 +2695,7 @@ void QCameraHardwareInterface::pausePreviewForVideo()
         mParameters.setPreviewSize(mPreviewWidth, mPreviewHeight);
         restart |= true;
     }
+
     if (restart) {
         stopPreviewInternal();
         mPreviewState = QCAMERA_HAL_PREVIEW_STOPPED;
@@ -2718,9 +2719,10 @@ void QCameraHardwareInterface::pausePreviewForVideo()
             ALOGE("%s: Restart for Video Failed",__func__);
         }
     }
+
 }
 
-/**/
+
 bool QCameraHardwareInterface::getHdrInfoAndSetExp( int max_num_frm, int *num_frame, int *exp)
 {
     bool rc = false;

@@ -90,6 +90,10 @@ extern "C" {
 #define DEFAULT_PICTURE_WIDTH  640
 #define DEFAULT_PICTURE_HEIGHT 480
 
+//Default Preview Width
+#define DEFAULT_PREVIEW_WIDTH 640
+#define DEFAULT_PREVIEW_HEIGHT 480
+
 //Default Video Width
 #define DEFAULT_VIDEO_WIDTH 1920
 #define DEFAULT_VIDEO_HEIGHT 1088
@@ -139,32 +143,45 @@ static camera_size_type jpeg_thumbnail_sizes[]  = {
 {0,0}
 };
 
-static camera_size_type default_preview_sizes[] = {
-  { 1920, 1088}, //1080p
-  { 1280, 720}, // 720P, reserved
-  { 960, 720}, // for panorama
-  { 960, 544},
-  { 800, 480}, // WVGA
-  { 768, 432},
-  { 720, 480},
-  { 640, 480}, // VGA
-  { 576, 432},
-  { 480, 320}, // HVGA
-  { 384, 288},
-  { 352, 288}, // CIF
-  { 320, 240}, // QVGA
-  { 240, 160}, // SQVGA
-  { 176, 144}, // QCIF
+static camera_size_type default_preview_sizes_s[] = {
+{ 1920, 1088}, //1080p
+{ 1280, 720}, // 720P, reserved
+{ 960, 720}, // for panorama
+{ 800, 480}, // WVGA
+{ 720, 480},
+{ 640, 480}, // VGA
+{ 576, 432},
+{ 480, 320}, // HVGA
+{ 384, 288},
+{ 352, 288}, // CIF
+{ 320, 240}, // QVGA
+{ 240, 160}, // SQVGA
+{ 176, 144} // QCIF
 };
+#define DEFAULT_PREVIEW_SIZES_COUNT (sizeof(default_preview_sizes)/sizeof(camera_size_type))
+static camera_size_type supported_video_sizes[] = {
+{ 1920, 1088},// 1080p
+{ 1280, 720}, // 720p
+{ 960, 720},  // for panorama
+{ 800, 480},  // WVGA
+{ 768, 432},
+{ 720, 480},  // 480p
+{ 640, 480},  // VGA
+{ 480, 320},  // HVGA
+{ 352, 288},  // CIF
+{ 320, 240},  // QVGA
+{ 176, 144},  // QCIF
+};
+#define SUPPORTED_VIDEO_SIZES_COUNT (sizeof(supported_video_sizes)/sizeof(camera_size_type))
 
 static struct camera_size_type zsl_picture_sizes[] = {
-  { 1280, 960}, // 1.3MP
-  { 800, 600}, //SVGA
-  { 800, 480}, // WVGA
-  { 640, 480}, // VGA
-  { 352, 288}, //CIF
-  { 320, 240}, // QVGA
-  { 176, 144} // QCIF
+{ 1280, 960}, // 1.3MP
+{ 800, 600}, //SVGA
+{ 800, 480}, // WVGA
+{ 640, 480}, // VGA
+{ 352, 288}, //CIF
+{ 320, 240}, // QVGA
+{ 176, 144} // QCIF
 };
 
 static camera_size_type default_picture_sizes[] = {
@@ -186,20 +203,10 @@ static camera_size_type default_picture_sizes[] = {
   { 176, 144} // QCIF
 };
 
-static camera_size_type supported_video_sizes[] = {
-  { 1920, 1088},// 1080p
-  { 1280, 720}, // 720p
-  { 960, 720},  // for panorama
-  { 800, 480},  // WVGA
-  { 768, 432},
-  { 720, 480},  // 480p
-  { 640, 480},  // VGA
-  { 480, 320},  // HVGA
-  { 352, 288},  // CIF
-  { 320, 240},  // QVGA
-  { 176, 144},  // QCIF
+static camera_size_type hfr_sizes[] = {
+  { 800, 480}, // WVGA
+  { 640, 480} // VGA
 };
-#define SUPPORTED_VIDEO_SIZES_COUNT (sizeof(supported_video_sizes)/sizeof(camera_size_type))
 
 static int iso_speed_values[] = {
     0, 1, 100, 200, 400, 800, 1600
@@ -833,7 +840,7 @@ void QCameraHardwareInterface::initDefaultParameters()
         }
         mHfrValues = str;
         mHfrSizeValues = create_sizes_str(
-                default_hfr_sizes, hfr_sizes_count);
+                hfr_sizes, HFR_SIZE_COUNT);
         mFpsRangesSupportedValues = create_fps_str(
             FpsRangesSupported,FPS_RANGES_SUPPORTED_COUNT );
         mParameters.set(
@@ -930,23 +937,23 @@ void QCameraHardwareInterface::initDefaultParameters()
 
     //set supported video sizes
     mParameters.set(QCameraParameters::KEY_SUPPORTED_VIDEO_SIZES, mVideoSizeValues.string());
-//    mParameters.set(QCameraParameters::KEY_SUPPORTED_VIDEO_SIZES, SUPPORTED_VIDEO_SIZES_COUNT);
 
     //set default video size to first one in supported table
     String8 vSize = create_sizes_str(&mVideoSizes[0], 1);
     mParameters.set(QCameraParameters::KEY_VIDEO_SIZE, vSize.string());
-
     //Set Preview size
-    int default_preview_width, default_preview_height;
+/*    int default_preview_width, default_preview_height;
     cam_config_get_parm(mCameraId, MM_CAMERA_PARM_DEFAULT_PREVIEW_WIDTH,
             &default_preview_width);
     cam_config_get_parm(mCameraId, MM_CAMERA_PARM_DEFAULT_PREVIEW_HEIGHT,
             &default_preview_height);
-    mParameters.setPreviewSize(default_preview_width, default_preview_height);
+*/
+    mParameters.setPreviewSize(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT);
+//    mParameters.setPreviewSize(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT);
     mParameters.set(QCameraParameters::KEY_SUPPORTED_PREVIEW_SIZES,
                     mPreviewSizeValues.string());
-    mDimension.display_width = default_preview_width;
-    mDimension.display_height = default_preview_height;
+    mDimension.display_width = DEFAULT_PREVIEW_WIDTH;
+    mDimension.display_height = DEFAULT_PREVIEW_HEIGHT;
 
     //Set Preview Frame Rate
     if(mFps >= MINIMUM_FPS && mFps <= MAXIMUM_FPS) {
@@ -990,7 +997,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.set("max-num-detected-faces-hw", "2");
 
     // Set supported max faces
-    int maxNumFaces = 0;
+/*    int maxNumFaces = 0;
     if (supportsFaceDetection()) {
         //Query the maximum number of faces supported by hardware.
         if(MM_CAMERA_OK != cam_config_get_parm(mCameraId,
@@ -1002,7 +1009,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     //This paramtere is set to default here. This will be changed by application
     //if it needs to support specific number of faces. See also setParameters.
     mParameters.set(QCameraParameters::KEY_MAX_NUM_REQUESTED_FACES, 2);
-
+*/
     // Set camera features supported flag
     int32_t featureFlag = 0;
     if (supportsFaceDetection()) {
@@ -1042,7 +1049,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mDimension.ui_thumbnail_height =
             thumbnail_sizes[DEFAULT_THUMBNAIL_SETTING].height;
     mParameters.set(QCameraParameters::KEY_JPEG_THUMBNAIL_QUALITY, "90");
-    String8 valuesStr = create_sizes_str(jpeg_thumbnail_sizes, thumbnail_sizes_count);
+    String8 valuesStr = create_sizes_str(jpeg_thumbnail_sizes, JPEG_THUMBNAIL_SIZE_COUNT);
     mParameters.set(QCameraParameters::KEY_SUPPORTED_JPEG_THUMBNAIL_SIZES,
                 valuesStr.string());
     // Define CAMERA_SMOOTH_ZOOM in Android.mk file , to enable smoothzoom
@@ -1318,7 +1325,7 @@ void QCameraHardwareInterface::initDefaultParameters()
             EXPOSURE_COMPENSATION_STEP);
 
     mParameters.set("num-snaps-per-shutter", 1);
-#if 0
+
     mParameters.set("capture-burst-captures-values", getZSLQueueDepth());
     mParameters.set("capture-burst-interval-supported", "true");
     mParameters.set("capture-burst-interval-max", BURST_INTREVAL_MAX); /*skip frames*/
@@ -1329,6 +1336,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.set("capture-burst-exposures", "");
     mParameters.set("capture-burst-exposures-values",
       "-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12");
+//#if 0
     {
       String8 CamModeStr;
       char buffer[32];
@@ -1348,7 +1356,7 @@ void QCameraHardwareInterface::initDefaultParameters()
       }
       mParameters.set("camera-mode-values", CamModeStr);
     }
-
+//#endif
     mParameters.set("ae-bracket-hdr-values",
       create_values_str(hdr_bracket, sizeof(hdr_bracket)/sizeof(str_map) ));
 
@@ -1357,7 +1365,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.set("no-display-mode", 0);
     //mUseOverlay = useOverlay();
     mParameters.set("zoom", 0);
-
+//#if 0
     int mNuberOfVFEOutputs;
     ret = cam_config_get_parm(mCameraId, MM_CAMERA_PARM_VFE_OUTPUT_ENABLE, &mNuberOfVFEOutputs);
     if(ret != MM_CAMERA_OK) {
@@ -1370,7 +1378,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     } else {
        mParameters.set(QCameraParameters::KEY_SINGLE_ISP_OUTPUT_ENABLED, "false");
     }
-#endif
+//#endif
     if (setParameters(mParameters) != NO_ERROR) {
         ALOGE("Failed to set default parameters?!");
     }
@@ -1414,6 +1422,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     status_t rc, final_rc = NO_ERROR;
 
 //    if ((rc = setPowerMode(params)))                    final_rc = rc;
+    if ((rc = setCameraMode(params)))                   final_rc = rc;
     if ((rc = setPreviewSize(params)))                  final_rc = rc;
     if ((rc = setVideoSize(params)))                    final_rc = rc;
     if ((rc = setPictureSize(params)))                  final_rc = rc;
@@ -2553,6 +2562,7 @@ status_t QCameraHardwareInterface::setSkinToneEnhancement(const QCameraParameter
 
 status_t QCameraHardwareInterface::setWaveletDenoise(const QCameraParameters& params) {
     ALOGV("%s",__func__);
+#if 0
     status_t rc = NO_ERROR;
     rc = cam_config_is_parm_supported(mCameraId, MM_CAMERA_PARM_WAVELET_DENOISE);
     if(rc != MM_CAMERA_PARM_SUPPORT_SET) {
@@ -2584,6 +2594,7 @@ status_t QCameraHardwareInterface::setWaveletDenoise(const QCameraParameters& pa
         return NO_ERROR;
     }
     ALOGE("Invalid Denoise value: %s", (str == NULL) ? "NULL" : str);
+#endif
     return BAD_VALUE;
 }
 
@@ -2636,7 +2647,7 @@ status_t QCameraHardwareInterface::setCameraMode(const QCameraParameters& params
         myMode = (camera_mode_t)(myMode & ~CAMERA_ZSL_MODE);
     }
 
-/*    return NO_ERROR;
+    return NO_ERROR;
 }
 
 status_t QCameraHardwareInterface::setPowerMode(const QCameraParameters& params) {
@@ -2663,7 +2674,7 @@ status_t QCameraHardwareInterface::setPowerMode(const QCameraParameters& params)
           value ? "Enabled" : "Disabled", value);
     native_set_parms(MM_CAMERA_PARM_LOW_POWER_MODE, sizeof(value),
                                                (void *)&value);
-*/
+
     return NO_ERROR;
 }
 
@@ -2683,6 +2694,7 @@ status_t QCameraHardwareInterface::setPreviewSize(const QCameraParameters& param
             if(width != old_width || height != old_height) {
                 mRestartPreview = true;
             }
+
             mParameters.setPreviewSize(width, height);
             ALOGV("setPreviewSize:  width: %d   heigh: %d", width, height);
             mPreviewWidth = width;
@@ -3448,8 +3460,8 @@ status_t QCameraHardwareInterface::setPictureFormat(const QCameraParameters& par
 
 status_t QCameraHardwareInterface::setRecordingHintValue(const int32_t value)
 {
-//    native_set_parms(MM_CAMERA_PARM_RECORDING_HINT, sizeof(value),
-//                                           (void *)&value);
+    native_set_parms(MM_CAMERA_PARM_RECORDING_HINT, sizeof(value),
+                                           (void *)&value);
     if (value == true){
         native_set_parms(MM_CAMERA_PARM_CAF_ENABLE, sizeof(value),
                                            (void *)&value);
@@ -3494,8 +3506,8 @@ status_t QCameraHardwareInterface::setDISMode() {
 
   ALOGV("%s DIS is %s value = %d", __func__,
           value ? "Enabled" : "Disabled", value);
-  native_set_parms(MM_CAMERA_PARM_DIS_ENABLE, sizeof(value),
-                                               (void *)&value);
+//  native_set_parms(MM_CAMERA_PARM_DIS_ENABLE, sizeof(value),
+//                                               (void *)&value);
   return NO_ERROR;
 }
 
@@ -3644,45 +3656,54 @@ status_t QCameraHardwareInterface::setPreviewSizeTable(void)
     char str[10] = {0};
 
     /* Initialize table with default values */
-    preview_size_table = default_preview_sizes;
-//    preview_table_size = preview_sizes_count;
-    preview_table_size = sizeof(default_preview_sizes)/
-        sizeof(default_preview_sizes[0]);
+    preview_size_table = default_preview_sizes_s;
+    preview_table_size = sizeof(default_preview_sizes_s)/
+           sizeof(default_preview_sizes_s[0]);
+    mPreviewSizes =
+        ( struct camera_size_type *)malloc(preview_table_size *
+                                           sizeof(struct camera_size_type));
+    if (mPictureSizes == NULL) {
+        ALOGD("%s: Failre allocating memory to store picture size table",__func__);
+        goto end;
+    }
+         ALOGD("%s:campreview_table_sizeOLOLOLOLOLOLO1111111111111= %d",__func__, preview_table_size);
     /* Get maximum preview size supported by sensor*/
     memset(&dim, 0, sizeof(mm_camera_dimension_t));
     ret = cam_config_get_parm(mCameraId,
                               MM_CAMERA_PARM_MAX_PREVIEW_SIZE, &dim);
     if (ret != NO_ERROR) {
-        ALOGE("%s: Failure getting Max Preview Size supported by camera",
+        ALOGD("%s: Failure getting Max Preview Size supported by camera",
              __func__);
         goto end;
     }
 
-    ALOGV("%s: Max Preview Sizes Supported: %d X %d", __func__,
+    ALOGD("%s: Max Preview Sizes Supported: %d X %d", __func__,
          dim.width, dim.height);
 
     for (i = 0; i < preview_table_size; i++) {
         if ((preview_size_table->width <= dim.width) &&
             (preview_size_table->height <= dim.height)) {
-            ALOGV("%s: Camera Preview Size Table "
+            ALOGD("%s: Camera Preview Size Table "
                  "Max width: %d height %d table_size: %d",
                  __func__, preview_size_table->width,
                  preview_size_table->height, preview_table_size - i);
             break;
         }
         preview_size_table++;
+        ALOGD("%s:camresultIIIIIIIIIIIIIIII= %dxxx%d",__func__, preview_size_table->width,preview_size_table->height);
     }
+
     //set preferred preview size to maximum preview size
     sprintf(str, "%dx%d", preview_size_table->width, preview_size_table->height);
     mParameters.set(QCameraParameters::KEY_PREFERRED_PREVIEW_SIZE_FOR_VIDEO, str);
-    ALOGV("KEY_PREFERRED_PREVIEW_SIZE_FOR_VIDEO = %s", str);
+    ALOGD("KEY_PREFERRED_PREVIEW_SIZE_FOR_VIDEO = %s", str);
 
 end:
     /* Save the table in global member*/
     mPreviewSizes = preview_size_table;
     /* Also remove the smallest preview (176x144) in the returned list, which occurs
      * last - it's broken */
-    mPreviewSizeCount = preview_table_size - i;
+    mPreviewSizeCount = preview_table_size -i;
 
     return ret;
 }
@@ -3697,13 +3718,13 @@ status_t QCameraHardwareInterface::setPictureSizeTable(void)
 
     /* Initialize table with default values */
     picture_table_size = sizeof(default_picture_sizes)/
-        sizeof(default_picture_sizes[0]);
+        sizeof(default_preview_sizes[0]);
     picture_size_table = default_picture_sizes;
     mPictureSizes =
         ( struct camera_size_type *)malloc(picture_table_size *
                                            sizeof(struct camera_size_type));
     if (mPictureSizes == NULL) {
-        ALOGE("%s: Failre allocating memory to store picture size table",__func__);
+        ALOGD("%s: Failre allocating memory to store picture size table",__func__);
         goto end;
     }
 
@@ -3712,7 +3733,7 @@ status_t QCameraHardwareInterface::setPictureSizeTable(void)
     ret = cam_config_get_parm(mCameraId,
                               MM_CAMERA_PARM_MAX_PICTURE_SIZE, &dim);
     if (ret != NO_ERROR) {
-        ALOGE("%s: Failure getting Max Picture Size supported by camera",
+        ALOGD("%s: Failure getting Max Picture Size supported by camera",
              __func__);
         ret = NO_MEMORY;
         free(mPictureSizes);
@@ -3720,7 +3741,7 @@ status_t QCameraHardwareInterface::setPictureSizeTable(void)
         goto end;
     }
 
-    ALOGV("%s: Max Picture Sizes Supported: %d X %d", __func__,
+    ALOGD("%s: Max Picture Sizes Supported: %d X %d", __func__,
          dim.width, dim.height);
 
     for (i = 0; i < picture_table_size; i++) {
@@ -3728,7 +3749,7 @@ status_t QCameraHardwareInterface::setPictureSizeTable(void)
            are less than or equal to maximum supported */
         if ((picture_size_table->width <= dim.width) &&
             (picture_size_table->height <= dim.height)) {
-            ALOGV("%s: Camera Picture Size Table "
+            ALOGD("%s: Camera Picture Size Table "
                  "Max width: %d height %d table_size: %d",
                  __func__, picture_size_table->width,
                  picture_size_table->height, count+1);
@@ -3759,23 +3780,24 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
     ALOGV("%s: E", __func__);
 
     /* Initialize table with default values */
-    video_table_size = SUPPORTED_VIDEO_SIZES_COUNT;
+    video_table_size = sizeof(supported_video_sizes)/
+        sizeof(supported_video_sizes[0]);;
     video_size_table = supported_video_sizes;
     mVideoSizes =
         (struct camera_size_type *)malloc(video_table_size *
                                            sizeof(struct camera_size_type));
     if(mVideoSizes == NULL) {
-        ALOGE("%s: error allocating memory to store video size table",__func__);
+        ALOGD("%s: error allocating memory to store video size table",__func__);
         ret = BAD_VALUE;
         goto end;
     }
 
     /* Get maximum video size supported by sensor*/
-    memset(&dim, 0, sizeof(mm_camera_dimension_t));
+/*    memset(&dim, 0, sizeof(mm_camera_dimension_t));
     ret = cam_config_get_parm(mCameraId,
                               MM_CAMERA_PARM_MAX_VIDEO_SIZE, &dim);
     if(ret != NO_ERROR) {
-        ALOGE("%s: error getting Max Video Size supported by camera",
+        ALOGD("%s: error getting Max Video Size supported by camera",
              __func__);
         ret = NO_MEMORY;
         free(mVideoSizes);
@@ -3784,27 +3806,30 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
         goto end;
     }
 
-    ALOGV("%s: Max Video Size Supported: %d X %d", __func__,
+    ALOGD("%s: Max Video Size Supported: %d X %d", __func__,
          dim.width, dim.height);
 
     for(i=0; i < video_table_size; i++) {
-        /* We'll store those dimensions whose width AND height
-           are less than or equal to maximum supported */
-        if((video_size_table->width <= dim.width) &&
-            (video_size_table->height <= dim.height)) {
-            ALOGV("%s: Supported Video Size [%d] = %dx%d", __func__, count, video_size_table->width,
+         We'll store those dimensions whose width AND height
+           are less than or equal to maximum supported 
+//        if((video_size_table->width <= dim.width) &&
+//            (video_size_table->height <= dim.height)) {
+            ALOGD("%s: Supported Video Size [%d] = %dx%d", __func__, count, video_size_table->width,
                                     video_size_table->height);
             mVideoSizes[count].height = video_size_table->height;
             mVideoSizes[count].width = video_size_table->width;
             count++;
-        }
-        video_size_table++;
-    }
-    mVideoSizeCount = count;
 
+        video_size_table++;
+        ALOGD("%s:camVideoSizeTableIIIIIIIIIIIIIIII= %dxxx%d",__func__, video_size_table->width,video_size_table->height);
+}
+*/
 end:
-    ALOGV("%s: X", __func__);
+    mVideoSizeCount = video_table_size;
+    mVideoSizes = supported_video_sizes;
+
     return ret;
+    ALOGD("%s: X", __func__);
 }
 
 void QCameraHardwareInterface::freeVideoSizeTable(void)

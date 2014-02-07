@@ -366,10 +366,10 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_ASD_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
 
-/*    case MM_CAMERA_PARM_RECORDING_HINT:
+    case MM_CAMERA_PARM_RECORDING_HINT:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_RECORDING_HINT, sizeof(uint32_t), (void *)parm->p_value);
-*/
+
     case MM_CAMERA_PARM_PREVIEW_FORMAT:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_PARM_PREVIEW_FORMAT, sizeof(uint32_t), (void *)parm->p_value);
@@ -384,10 +384,10 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
                   CAMERA_SET_FULL_LIVESHOT, sizeof(uint32_t), (void *)parm->p_value);
     }
 
-/*    case MM_CAMERA_PARM_LOW_POWER_MODE:
-      return mm_camera_send_native_ctrl_cmd(my_obj,
-                  CAMERA_SET_LOW_POWER_MODE, sizeof(uint32_t), (void *)parm->p_value);
-*/
+    case MM_CAMERA_PARM_LOW_POWER_MODE:
+      return 0;// mm_camera_send_native_ctrl_cmd(my_obj,
+                 // CAMERA_SET_LOW_POWER_MODE, sizeof(uint32_t), (void *)parm->p_value);
+
     case MM_CAMERA_PARM_CAF_TYPE:
       CDBG("SM : %s : MM_CAMERA_PARM_CAF_TYPE value : %d",__func__,*((int *)(parm->p_value)));
       return mm_camera_send_native_ctrl_cmd(my_obj,
@@ -493,16 +493,17 @@ int32_t mm_camera_set_parm(mm_camera_obj_t * my_obj,
                             MM_CAMERA_STATE_EVT_SET_FMT, fmt);
         }
         break;
-/*    case MM_CAMERA_PARM_CHECK_AF_RETRY:
+    case MM_CAMERA_PARM_CHECK_AF_RETRY:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_CHECK_AF_RETRY,
                  0, (void *)NULL);
     case MM_CAMERA_PARM_LG_CAF_LOCK:
-        return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_SET_LG_CAF_LOCK,
-                 0, (void *)NULL);
+        return 0;// mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_SET_LG_CAF_LOCK,
+                 //0, (void *)NULL);
+
     case MM_CAMERA_PARM_INFORM_STARTPRVIEW:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_SET_INFORM_STARTPREVIEW,
                  0, (void *)NULL);
-*/
+
     default:
         rc = mm_camera_set_general_parm(my_obj, parm);
         break;
@@ -620,7 +621,8 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_ZOOMRATIOS,
                      sizeof(int16_t)*tbl->size, tbl->zoom_ratio_tbl);
     }
-/*    case MM_CAMERA_PARM_DEF_PREVIEW_SIZES: {
+/*
+    case MM_CAMERA_PARM_DEF_PREVIEW_SIZES: {
         default_sizes_tbl_t *tbl = (default_sizes_tbl_t*)parm->p_value;
         return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_DEF_PREVIEW_SIZES,
                      sizeof(struct camera_size_type)*tbl->tbl_size, tbl->sizes_tbl);
@@ -655,27 +657,27 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
         return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_LUX_IDX,
                      sizeof(int), (void *)parm->p_value);
     case MM_CAMERA_PARM_MAX_NUM_FACES_DECT:
-        return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_MAX_NUM_FACES_DECT,
-                     sizeof(int), (void *)parm->p_value);
+        return 0;// mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_MAX_NUM_FACES_DECT,
+                //     sizeof(int), (void *)parm->p_value);
     case MM_CAMERA_PARM_FACIAL_FEATURE_INFO:
-        return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_FACIAL_FEATURE_INFO,
-                     sizeof(int), (void *)parm->p_value);
+        return 0;// mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_FACIAL_FEATURE_INFO,
+                //     sizeof(int), (void *)parm->p_value);
     case MM_CAMERA_PARM_HDR:
         rc = mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_GET_PARM_HDR, sizeof(exp_bracketing_t), (void *)parm->p_value);
         //my_obj->channel_interface_mask = *((exp_bracketing_t *)(parm->p_value));
         break;
     case MM_CAMERA_GET_PARM_LOW_LIGHT_FOR_ZSL:
-        return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_LOW_LIGHT_FOR_ZSL,
-                     sizeof(aec_info_for_flash_t), (void *)parm->p_value);
+        return 0; // mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_LOW_LIGHT_FOR_ZSL,
+                    // sizeof(aec_info_for_flash_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_GET_AF_STATUS:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_AF_STATUS,
                      sizeof(af_actuator_status_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_F_NUMBER:
-        return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_F_NUMBER,
-                     sizeof(float), (void *)parm->p_value);
+        return 0;// mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_F_NUMBER,
+                //     sizeof(float), (void *)parm->p_value);
 
     default:
         /* needs to add more implementation */
@@ -734,6 +736,7 @@ static int mm_camera_evt_sub(mm_camera_obj_t * my_obj,
             sub.type = V4L2_EVENT_PRIVATE_START+MSM_CAM_APP_NOTIFY_ERROR_EVENT;
             rc = ioctl(my_obj->ctrl_fd, VIDIOC_UNSUBSCRIBE_EVENT, &sub);
             CDBG("%s: unsubscribe event 0x%x, rc = %d", __func__, sub.type, rc);
+
         }
         my_obj->evt_type_mask &= ~(1 << evt_type);
         if(my_obj->evt_type_mask == 0) {
@@ -752,6 +755,7 @@ static int mm_camera_evt_sub(mm_camera_obj_t * my_obj,
             CDBG("%s: subscribe event 0x%x, rc = %d", __func__, sub.type, rc);
             if (rc < 0)
                 goto end;
+
         }
         my_obj->evt_type_mask |= (1 << evt_type);
         if(my_obj->evt_type_mask == (uint32_t)(1 << evt_type)) {

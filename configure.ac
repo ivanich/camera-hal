@@ -62,7 +62,7 @@ fi
 AC_ARG_ENABLE([debug],
 	[AS_HELP_STRING([--enable-debug],[Build with debug flags and options])],
 	[DEBUG=$enableval],
-	[DEBUG=no]
+	[DEBUG=yes]
 )
 if test "x$DEBUG" = "xyes"; then
 	DEBUG_CPPFLAGS="${DEBUG_CPPFLAGS} -DLOG_DEBUG -DLOG_TAG=\"CameraService\""
