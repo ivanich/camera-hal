@@ -1009,14 +1009,14 @@ void QCameraHardwareInterface::initDefaultParameters()
     //This paramtere is set to default here. This will be changed by application
     //if it needs to support specific number of faces. See also setParameters.
     mParameters.set(QCameraParameters::KEY_MAX_NUM_REQUESTED_FACES, 2);
-*/
+
     // Set camera features supported flag
     int32_t featureFlag = 0;
     if (supportsFaceDetection()) {
         featureFlag |= 0x00000001; // bit 0 indicate faciral feature
     }
     mParameters.set(QCameraParameters::KEY_SUPPORTED_CAMERA_FEATURES, featureFlag);
-
+*/
     //Set Picture Size
     mParameters.setPictureSize(DEFAULT_PICTURE_WIDTH, DEFAULT_PICTURE_HEIGHT);
     mParameters.set(QCameraParameters::KEY_SUPPORTED_PICTURE_SIZES,
@@ -1094,11 +1094,11 @@ void QCameraHardwareInterface::initDefaultParameters()
 
 
     //Set default power mode
-    mParameters.set(QCameraParameters::KEY_POWER_MODE,"Low_Power");
+//    mParameters.set(QCameraParameters::KEY_POWER_MODE,"Low_Power");
     //Set Wnr on
-    mParameters.set(QCameraParameters::KEY_DENOISE,true);
+//    mParameters.set(QCameraParameters::KEY_DENOISE,true);
     //Set Camera Mode
-    mParameters.set(QCameraParameters::KEY_CAMERA_MODE,1);
+    mParameters.set(QCameraParameters::KEY_CAMERA_MODE,0);
     mParameters.set(QCameraParameters::KEY_AE_BRACKET_HDR,"Off");
 
     //Set Antibanding
@@ -1243,9 +1243,10 @@ void QCameraHardwareInterface::initDefaultParameters()
 
     //Set Denoise
     mParameters.set(QCameraParameters::KEY_DENOISE,
-                    QCameraParameters::DENOISE_ON);
+                    QCameraParameters::DENOISE_OFF);
     mParameters.set(QCameraParameters::KEY_SUPPORTED_DENOISE,
                         denoise_value);
+
     //Set Touch AF/AEC
     mParameters.set(QCameraParameters::KEY_TOUCH_AF_AEC,
                     QCameraParameters::TOUCH_AF_AEC_OFF);
@@ -1305,11 +1306,11 @@ void QCameraHardwareInterface::initDefaultParameters()
                     verticalViewAngle);
 
     //Set Aperture
-    float f_number = 0.0f;
+/*    float f_number = 0.0f;
     cam_config_get_parm(mCameraId, MM_CAMERA_PARM_F_NUMBER,
             (void *)&f_number);
     mExifValues.f_number = getRational(f_number*F_NUMBER_DECIMAL_PRECISION, F_NUMBER_DECIMAL_PRECISION);
-
+*/
     //Set Exposure Compensation
     mParameters.set(
             QCameraParameters::KEY_MAX_EXPOSURE_COMPENSATION,
@@ -1323,7 +1324,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.setFloat(
             QCameraParameters::KEY_EXPOSURE_COMPENSATION_STEP,
             EXPOSURE_COMPENSATION_STEP);
-
+#if 0
     mParameters.set("num-snaps-per-shutter", 1);
 
     mParameters.set("capture-burst-captures-values", getZSLQueueDepth());
@@ -1336,7 +1337,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.set("capture-burst-exposures", "");
     mParameters.set("capture-burst-exposures-values",
       "-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12");
-//#if 0
+#endif
     {
       String8 CamModeStr;
       char buffer[32];
@@ -1362,7 +1363,7 @@ void QCameraHardwareInterface::initDefaultParameters()
 
 // if(mIs3DModeOn)
 //     mParameters.set("3d-frame-format", "left-right");
-    mParameters.set("no-display-mode", 0);
+//    mParameters.set("no-display-mode", 0);
     //mUseOverlay = useOverlay();
     mParameters.set("zoom", 0);
 //#if 0
@@ -1422,7 +1423,6 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     status_t rc, final_rc = NO_ERROR;
 
 //    if ((rc = setPowerMode(params)))                    final_rc = rc;
-    if ((rc = setCameraMode(params)))                   final_rc = rc;
     if ((rc = setPreviewSize(params)))                  final_rc = rc;
     if ((rc = setVideoSize(params)))                    final_rc = rc;
     if ((rc = setPictureSize(params)))                  final_rc = rc;
@@ -1440,7 +1440,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     if ((rc = setSaturation(params)))                   final_rc = rc;
     if ((rc = setSceneMode(params)))                    final_rc = rc;
     if ((rc = setContrast(params)))                     final_rc = rc;
-//    if ((rc = setFaceDetect(params)))                   final_rc = rc;
+    if ((rc = setFaceDetect(params)))                   final_rc = rc;
     if ((rc = setStrTextures(params)))                  final_rc = rc;
     if ((rc = setPreviewFormat(params)))                final_rc = rc;
     if ((rc = setSkinToneEnhancement(params)))          final_rc = rc;
@@ -1461,6 +1461,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     } else {
       mParameters.set("capture-burst-exposures", str_val);
     }
+    
     mParameters.set("num-snaps-per-shutter", params.get("num-snaps-per-shutter"));
 
     if ((rc = setAEBracket(params)))              final_rc = rc;
@@ -1474,7 +1475,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     int32_t value = attr_lookup(scenemode, sizeof(scenemode) / sizeof(str_map), str);
 
     if((value != NOT_FOUND) && (value == CAMERA_BESTSHOT_OFF )) {
-        //if ((rc = setPreviewFrameRateMode(params)))     final_rc = rc;
+        if ((rc = setPreviewFrameRateMode(params)))     final_rc = rc;
         if ((rc = setPreviewFrameRate(params)))         final_rc = rc;
         if ((rc = setBrightness(params)))               final_rc = rc;
         if ((rc = setISOValue(params)))                 final_rc = rc;
@@ -1489,10 +1490,10 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     if ((rc = setSelectableZoneAf(params)))             final_rc = rc;
     // setHighFrameRate needs to be done at end, as there can
     // be a preview restart, and need to use the updated parameters
-    if ((rc = setHighFrameRate(params)))  final_rc = rc;
-    if ((rc = setZSLBurstLookBack(params))) final_rc = rc;
-    if ((rc = setZSLBurstInterval(params))) final_rc = rc;
-    if ((rc = setNoDisplayMode(params))) final_rc = rc;
+//    if ((rc = setHighFrameRate(params)))  final_rc = rc;
+//   if ((rc = setZSLBurstLookBack(params))) final_rc = rc;
+//    if ((rc = setZSLBurstInterval(params))) final_rc = rc;
+//    if ((rc = setNoDisplayMode(params))) final_rc = rc;
 
     //Update Exiftag values.
     setExifTags();
