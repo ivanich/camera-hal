@@ -366,17 +366,17 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_ASD_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
 
-    case MM_CAMERA_PARM_RECORDING_HINT:
+/*    case MM_CAMERA_PARM_RECORDING_HINT:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_RECORDING_HINT, sizeof(uint32_t), (void *)parm->p_value);
-
+*/
     case MM_CAMERA_PARM_PREVIEW_FORMAT:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_PARM_PREVIEW_FORMAT, sizeof(uint32_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_DIS_ENABLE:
-      return 0;// mm_camera_send_native_ctrl_cmd(my_obj,
-                 // CAMERA_SET_DIS_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
+      return mm_camera_send_native_ctrl_cmd(my_obj,
+                 CAMERA_SET_DIS_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_FULL_LIVESHOT: {
       my_obj->full_liveshot = *((int *)(parm->p_value));
@@ -390,16 +390,16 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
 
     case MM_CAMERA_PARM_CAF_TYPE:
       CDBG("SM : %s : MM_CAMERA_PARM_CAF_TYPE value : %d",__func__,*((int *)(parm->p_value)));
-      return mm_camera_send_native_ctrl_cmd(my_obj,
-                  CAMERA_SET_PARM_CAF_TYPE, sizeof(int32_t), (void *)parm->p_value);
+      return 0;// mm_camera_send_native_ctrl_cmd(my_obj,
+                 // CAMERA_SET_PARM_CAF_TYPE, sizeof(int32_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_HDR:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                         CAMERA_SET_PARM_HDR, sizeof(exp_bracketing_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_CAF_LOCK_CANCEL:
-      return mm_camera_send_native_ctrl_cmd(my_obj,
-                  CAMERA_SET_CAF_LOCK_CANCEL, sizeof(uint32_t), (void *)parm->p_value);
+      return 0;// mm_camera_send_native_ctrl_cmd(my_obj,
+                 // CAMERA_SET_CAF_LOCK_CANCEL, sizeof(uint32_t), (void *)parm->p_value);
 
     default:
         CDBG("%s: default: parm %d not supported\n", __func__, parm->parm_type);
@@ -478,7 +478,9 @@ int32_t mm_camera_set_parm(mm_camera_obj_t * my_obj,
                  my_obj->dim.video_width, my_obj->dim.video_height,
                  my_obj->dim.picture_width,my_obj->dim.picture_height,
                  my_obj->dim.ui_thumbnail_width,my_obj->dim.ui_thumbnail_height,
-                 my_obj->dim.raw_picture_width,my_obj->dim.raw_picture_height);
+                 my_obj->dim.raw_picture_width,my_obj->dim.raw_picture_height,
+                 my_obj->dim.display_frame_offset.sp.len, my_obj->dim.video_frame_offset.sp.len,
+                 my_obj->dim.picture_frame_offset.sp.len, my_obj->dim.thumb_frame_offset.sp.len);
         break;
     case MM_CAMERA_PARM_SNAPSHOT_BURST_NUM:
         CDBG("%s: Setting snapshot burst number: %d\n", __func__, *((int *)parm->p_value));
@@ -494,15 +496,15 @@ int32_t mm_camera_set_parm(mm_camera_obj_t * my_obj,
         }
         break;
     case MM_CAMERA_PARM_CHECK_AF_RETRY:
-        return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_CHECK_AF_RETRY,
-                 0, (void *)NULL);
+        return 0;// mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_CHECK_AF_RETRY,
+                 //0, (void *)NULL);
     case MM_CAMERA_PARM_LG_CAF_LOCK:
         return 0;// mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_SET_LG_CAF_LOCK,
                  //0, (void *)NULL);
 
     case MM_CAMERA_PARM_INFORM_STARTPRVIEW:
-        return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_SET_INFORM_STARTPREVIEW,
-                 0, (void *)NULL);
+        return 0;//mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_SET_INFORM_STARTPREVIEW,
+                 //0, (void *)NULL);
 
     default:
         rc = mm_camera_set_general_parm(my_obj, parm);

@@ -1066,20 +1066,20 @@ status_t QCameraHardwareInterface::startPreview2()
 
     const char *str = mParameters.get(QCameraParameters::KEY_SCENE_MODE);
 
-    if (mRecordingHint || mFlashCond || !strcmp(str, "hdr")) {
+//    if (mRecordingHint || mFlashCond || !strcmp(str, "hdr")) {
         ALOGI("%s:Setting non-ZSL mode",__func__);
         mParameters.set(QCameraParameters::KEY_CAMERA_MODE, 0);
         myMode = (camera_mode_t)(myMode & ~CAMERA_ZSL_MODE);
         mParameters.setPreviewFrameRateMode("frame-rate-auto");
         setPreviewFrameRateMode(mParameters);
-     } else {
-        ALOGI("%s:Setting ZSL mode",__func__);
-        mParameters.set(QCameraParameters::KEY_CAMERA_MODE, 1);
-        myMode = (camera_mode_t)(myMode | CAMERA_ZSL_MODE);
-        mParameters.setPreviewFrameRateMode("frame-rate-auto");
-        setPreviewFrameRateMode(mParameters);
+//     } else {
+//        ALOGI("%s:Setting ZSL mode",__func__);
+//        mParameters.set(QCameraParameters::KEY_CAMERA_MODE, 1);
+//        myMode = (camera_mode_t)(myMode | CAMERA_ZSL_MODE);
+//        mParameters.setPreviewFrameRateMode("frame-rate-auto");
+//        setPreviewFrameRateMode(mParameters);
 
-    }
+//    }
 
     /*  get existing preview information, by qury mm_camera*/
     memset(&dim, 0, sizeof(cam_ctrl_dimension_t));
@@ -1090,7 +1090,7 @@ status_t QCameraHardwareInterface::startPreview2()
       ALOGV("%s: X", __func__);
       return BAD_VALUE;
     }
-
+    setFullLiveshot();
     /* config the parmeters and see if we need to re-init the stream*/
     initPreview = preview_parm_config (&dim, mParameters);
 
@@ -1148,12 +1148,12 @@ status_t QCameraHardwareInterface::startPreview2()
 
     ALOGV("%s: setPreviewWindow", __func__);
     mStreamDisplay->setPreviewWindow(mPreviewWindow);
-    ret = cam_config_set_parm(mCameraId, MM_CAMERA_PARM_INFORM_STARTPRVIEW, NULL);
+/*    ret = cam_config_set_parm(mCameraId, MM_CAMERA_PARM_INFORM_STARTPRVIEW, NULL);
     if(ret<0)
     {
       ALOGE("%s: Failed to Check MM_CAMERA_PARM_INFORM_STARTPRVIEW, rc %d", __func__, ret);
     }
-
+*/
     if(isZSLMode()) {
         /* Start preview streaming */
         ret = mStreamDisplay->start();

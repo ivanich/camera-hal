@@ -997,7 +997,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.set("max-num-detected-faces-hw", "2");
 
     // Set supported max faces
-/*    int maxNumFaces = 0;
+    int maxNumFaces = 0;
     if (supportsFaceDetection()) {
         //Query the maximum number of faces supported by hardware.
         if(MM_CAMERA_OK != cam_config_get_parm(mCameraId,
@@ -1016,7 +1016,7 @@ void QCameraHardwareInterface::initDefaultParameters()
         featureFlag |= 0x00000001; // bit 0 indicate faciral feature
     }
     mParameters.set(QCameraParameters::KEY_SUPPORTED_CAMERA_FEATURES, featureFlag);
-*/
+
     //Set Picture Size
     mParameters.setPictureSize(DEFAULT_PICTURE_WIDTH, DEFAULT_PICTURE_HEIGHT);
     mParameters.set(QCameraParameters::KEY_SUPPORTED_PICTURE_SIZES,
@@ -1081,7 +1081,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     }
 
     //8960 supports Power modes : Low power, Normal Power.
-    mParameters.set("power-mode-supported", "true");
+//    mParameters.set("power-mode-supported", "true");
 
     //Set Live shot support
     rc = cam_config_is_parm_supported(mCameraId, MM_CAMERA_PARM_LIVESHOT_MAIN);
@@ -1324,7 +1324,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.setFloat(
             QCameraParameters::KEY_EXPOSURE_COMPENSATION_STEP,
             EXPOSURE_COMPENSATION_STEP);
-#if 0
+
     mParameters.set("num-snaps-per-shutter", 1);
 
     mParameters.set("capture-burst-captures-values", getZSLQueueDepth());
@@ -1337,7 +1337,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.set("capture-burst-exposures", "");
     mParameters.set("capture-burst-exposures-values",
       "-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12");
-#endif
+
     {
       String8 CamModeStr;
       char buffer[32];
@@ -1366,7 +1366,7 @@ void QCameraHardwareInterface::initDefaultParameters()
 //    mParameters.set("no-display-mode", 0);
     //mUseOverlay = useOverlay();
     mParameters.set("zoom", 0);
-//#if 0
+#if 0
     int mNuberOfVFEOutputs;
     ret = cam_config_get_parm(mCameraId, MM_CAMERA_PARM_VFE_OUTPUT_ENABLE, &mNuberOfVFEOutputs);
     if(ret != MM_CAMERA_OK) {
@@ -1379,7 +1379,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     } else {
        mParameters.set(QCameraParameters::KEY_SINGLE_ISP_OUTPUT_ENABLED, "false");
     }
-//#endif
+#endif
     if (setParameters(mParameters) != NO_ERROR) {
         ALOGE("Failed to set default parameters?!");
     }
@@ -1418,7 +1418,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
 {
     status_t ret = NO_ERROR;
 
-    ALOGV("%s: E", __func__);
+    ALOGD("%s: E", __func__);
 //    Mutex::Autolock l(&mLock);
     status_t rc, final_rc = NO_ERROR;
 
@@ -1434,7 +1434,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     if ((rc = setZoom(params)))                         final_rc = rc;
     if ((rc = setOrientation(params)))                  final_rc = rc;
     if ((rc = setLensshadeValue(params)))               final_rc = rc;
-    if ((rc = setMCEValue(params)))                     final_rc = rc;
+//    if ((rc = setMCEValue(params)))                     final_rc = rc;
     if ((rc = setPictureFormat(params)))                final_rc = rc;
     if ((rc = setSharpness(params)))                    final_rc = rc;
     if ((rc = setSaturation(params)))                   final_rc = rc;
@@ -1444,10 +1444,10 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     if ((rc = setStrTextures(params)))                  final_rc = rc;
     if ((rc = setPreviewFormat(params)))                final_rc = rc;
     if ((rc = setSkinToneEnhancement(params)))          final_rc = rc;
-    if ((rc = setWaveletDenoise(params)))               final_rc = rc;
+//    if ((rc = setWaveletDenoise(params)))               final_rc = rc;
     if ((rc = setAntibanding(params)))                  final_rc = rc;
     //    if ((rc = setOverlayFormats(params)))         final_rc = rc;
-    if ((rc = setRedeyeReduction(params)))              final_rc = rc;
+//    if ((rc = setRedeyeReduction(params)))              final_rc = rc;
     if ((rc = setCaptureBurstExp()))                    final_rc = rc;
 
     const char *str_val = params.get("capture-burst-exposures");
@@ -1461,27 +1461,27 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     } else {
       mParameters.set("capture-burst-exposures", str_val);
     }
-    
+
     mParameters.set("num-snaps-per-shutter", params.get("num-snaps-per-shutter"));
 
     if ((rc = setAEBracket(params)))              final_rc = rc;
     //    if ((rc = setDenoise(params)))                final_rc = rc;
     if ((rc = setPreviewFpsRange(params)))              final_rc = rc;
-    if((rc = setRecordingHint(params)))                 final_rc = rc;
+//    if((rc = setRecordingHint(params)))                 final_rc = rc;
     if ((rc = setNumOfSnapshot(params)))                final_rc = rc;
-    if ((rc = setAecAwbLock(params)))                   final_rc = rc;
+//    if ((rc = setAecAwbLock(params)))                   final_rc = rc;
     if ((rc = setWhiteBalance(params)))                 final_rc = rc;
     const char *str = params.get(QCameraParameters::KEY_SCENE_MODE);
     int32_t value = attr_lookup(scenemode, sizeof(scenemode) / sizeof(str_map), str);
 
-    if((value != NOT_FOUND) && (value == CAMERA_BESTSHOT_OFF )) {
+//    if((value != NOT_FOUND) && (value == CAMERA_BESTSHOT_OFF )) {
         if ((rc = setPreviewFrameRateMode(params)))     final_rc = rc;
         if ((rc = setPreviewFrameRate(params)))         final_rc = rc;
         if ((rc = setBrightness(params)))               final_rc = rc;
         if ((rc = setISOValue(params)))                 final_rc = rc;
         if ((rc = setFocusAreas(params)))               final_rc = rc;
         if ((rc = setMeteringAreas(params)))            final_rc = rc;
-    }
+//    }
     if ((rc = setFocusMode(params)))                    final_rc = rc;
     if ((rc = setAutoExposure(params)))                 final_rc = rc;
     if ((rc = setExposureCompensation(params)))         final_rc = rc;
@@ -1490,7 +1490,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     if ((rc = setSelectableZoneAf(params)))             final_rc = rc;
     // setHighFrameRate needs to be done at end, as there can
     // be a preview restart, and need to use the updated parameters
-//    if ((rc = setHighFrameRate(params)))  final_rc = rc;
+    if ((rc = setHighFrameRate(params)))  final_rc = rc;
 //   if ((rc = setZSLBurstLookBack(params))) final_rc = rc;
 //    if ((rc = setZSLBurstInterval(params))) final_rc = rc;
 //    if ((rc = setNoDisplayMode(params))) final_rc = rc;
@@ -1498,7 +1498,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     //Update Exiftag values.
     setExifTags();
 
-   ALOGV("%s: X", __func__);
+   ALOGD("%s: X", __func__);
    return final_rc;
 }
 
@@ -3074,7 +3074,7 @@ status_t QCameraHardwareInterface::setHighFrameRate(const QCameraParameters& par
 
     int rc = cam_config_is_parm_supported(mCameraId, MM_CAMERA_PARM_HFR);
     if(!rc) {
-        ALOGV("%s: MM_CAMERA_PARM_HFR not supported", __func__);
+        ALOGD("%s: MM_CAMERA_PARM_HFR not supported", __func__);
         return NO_ERROR;
     }
 
