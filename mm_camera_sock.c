@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012, Code Aurora Forum. All rights reserved.
+Copyright (c) 2012, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -10,7 +10,7 @@ met:
       copyright notice, this list of conditions and the following
       disclaimer in the documentation and/or other materials provided
       with the distribution.
-    * Neither the name of Code Aurora Forum, Inc. nor the names of its
+    * Neither the name of The Linux Foundation nor the names of its
       contributors may be used to endorse or promote products derived
       from this software without specific prior written permission.
 
@@ -52,6 +52,7 @@ int mm_camera_socket_create(int cam_id, mm_camera_sock_type_t sock_type)
     int socket_fd;
     struct sockaddr_un sock_addr;
     int sktype;
+    int rc;
 
     switch (sock_type)
     {
@@ -73,12 +74,15 @@ int mm_camera_socket_create(int cam_id, mm_camera_sock_type_t sock_type)
 
     memset(&sock_addr, 0, sizeof(sock_addr));
     sock_addr.sun_family = AF_UNIX;
-    snprintf(sock_addr.sun_path, UNIX_PATH_MAX, "/data/cam_socket");
-    if(connect(socket_fd, (struct sockaddr *) &sock_addr,
-      sizeof(sock_addr)) != 0)
+    snprintf(sock_addr.sun_path, UNIX_PATH_MAX, "/data/cam_socket%d", cam_id);
+    if((rc = connect(socket_fd, (struct sockaddr *) &sock_addr,
+      sizeof(sock_addr))) != 0) {
+      close(socket_fd);
       socket_fd = -1;
+      CDBG_ERROR("%s: socket_fd=%d %s ", __func__, socket_fd, strerror(errno));
+    }
 
-    CDBG("%s: socket_fd=%d", __func__, socket_fd);
+    CDBG("%s: socket_fd=%d %s", __func__, socket_fd, sock_addr.sun_path);
     return socket_fd;
 }
 

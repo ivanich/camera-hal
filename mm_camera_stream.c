@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -10,7 +10,7 @@ met:
       copyright notice, this list of conditions and the following
       disclaimer in the documentation and/or other materials provided
       with the distribution.
-    * Neither the name of Code Aurora Forum, Inc. nor the names of its
+    * Neither the name of The Linux Foundation nor the names of its
       contributors may be used to endorse or promote products derived
       from this software without specific prior written permission.
 
@@ -154,8 +154,9 @@ void mm_camera_stream_frame_refill_q(mm_camera_frame_queue_t *q, mm_camera_frame
 
 void mm_camera_stream_deinit_frame(mm_camera_stream_frame_t *frame)
 {
-    pthread_mutex_destroy(&frame->mutex);
+    mm_stream_frame_flash_q(&frame->readyq);
     mm_camera_stream_deinit_q(&frame->readyq);
+    pthread_mutex_destroy(&frame->mutex);
     memset(frame, 0, sizeof(mm_camera_stream_frame_t));
 }
 
@@ -168,11 +169,11 @@ void mm_camera_stream_init_frame(mm_camera_stream_frame_t *frame)
 
 void mm_camera_stream_release(mm_camera_stream_t *stream)
 {
+    mm_camera_stream_util_set_state(stream, MM_CAMERA_STREAM_STATE_NOTUSED);
     mm_camera_stream_deinit_frame(&stream->frame);
     if(stream->fd > 0) close(stream->fd);
     memset(stream, 0, sizeof(*stream));
     //stream->fd = -1;
-    mm_camera_stream_util_set_state(stream, MM_CAMERA_STREAM_STATE_NOTUSED);
 }
 
 int mm_camera_stream_is_active(mm_camera_stream_t *stream)
@@ -240,8 +241,8 @@ int32_t mm_camera_util_s_ctrl( int32_t fd,  uint32_t id, int32_t value)
     rc = ioctl (fd, VIDIOC_S_CTRL, &control);
 
     if(rc) {
-//        CDBG("%s: fd=%d, S_CTRL, id=0x%x, value = 0x%x, rc = %ld\n",
-//                 __func__, fd, id, (uint32_t)value, rc);
+        CDBG("%s: fd=%d, S_CTRL, id=0x%x, value = 0x%x, rc = %ld\n",
+                 __func__, fd, id, (uint32_t)value, rc);
         rc = MM_CAMERA_E_GENERAL;
     }
     return rc;
@@ -277,6 +278,11 @@ static uint32_t mm_camera_util_get_v4l2_fmt(cam_format_t fmt,
         val = V4L2_PIX_FMT_NV21;
         *num_planes = 2;
         break;
+    case CAMERA_YUV_420_YV12:
+        val= V4L2_PIX_FMT_NV12;
+        *num_planes = 3;
+        break;
+
     case CAMERA_BAYER_SBGGR10:
         val= V4L2_PIX_FMT_SBGGR10;
         *num_planes = 1;
@@ -573,7 +579,7 @@ static int32_t mm_camera_stream_fsm_notused(mm_camera_obj_t * my_obj,
             mm_camera_stream_util_set_state(stream, MM_CAMERA_STREAM_STATE_ACQUIRED);
         } else if(stream->fd > 0) {
             close(stream->fd);
-            stream->fd = 0;
+            stream->fd = -1;
         }
         break;
     default:
@@ -689,7 +695,7 @@ int32_t mm_camera_stream_util_buf_done(mm_camera_obj_t * my_obj,
     pthread_mutex_lock(&stream->frame.mutex);
 
     if(stream->frame.ref_count[frame->idx] == 0) {
-        rc = mm_camera_stream_qbuf(my_obj, stream, frame->idx);
+        //rc = mm_camera_stream_qbuf(my_obj, stream, frame->idx);
         CDBG_ERROR("%s: Error Trying to free second time?(idx=%d) count=%d, stream type=%d\n",
                    __func__, frame->idx, stream->frame.ref_count[frame->idx], stream->stream_type);
         rc = -1;
@@ -702,8 +708,8 @@ int32_t mm_camera_stream_util_buf_done(mm_camera_obj_t * my_obj,
                 CDBG_ERROR("%s: mm_camera_stream_qbuf(idx=%d) err=%d\n",
                      __func__, frame->idx, rc);
         }else{
-            CDBG("<DEBUG> : Still ref count pending count :%d",stream->frame.ref_count[frame->idx]);
-            CDBG("<DEBUG> : for buffer:%p:%d, stream type=%d",stream,frame->idx, stream->stream_type);
+            CDBG_ERROR("<DEBUG> : Still ref count pending count :%d",stream->frame.ref_count[frame->idx]);
+            CDBG_ERROR("<DEBUG> : for buffer:%p:%d, stream type=%d",stream,frame->idx, stream->stream_type);
         }
     }
 
@@ -850,7 +856,7 @@ int32_t mm_camera_stream_fsm_fn_vtbl (mm_camera_obj_t * my_obj,
                    mm_camera_stream_t *stream,
                    mm_camera_state_evt_type_t evt, void *val)
 {
-    CDBG("%s: stream fd=%d, type = %d, state=%d, evt=%d\n",
+    CDBG("%s: stream fd=%d, type = %d, state=%d, evt\n",
                  __func__, stream->fd, stream->stream_type, stream->state, evt);
     return mm_camera_stream_fsm_fn[stream->state] (my_obj, stream, evt, val);
 }

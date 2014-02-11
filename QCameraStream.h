@@ -1,6 +1,6 @@
 /*
 ** Copyright 2008, Google Inc.
-** Copyright (c) 2009-2012, Code Aurora Forum. All rights reserved.
+** Copyright (c) 2009-2012, The Linux Foundation. All rights reserved.
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@
 
 #include "QCameraHWI.h"
 #include "QCameraHWI_Mem.h"
-
+#include "camera.h"
 extern "C" {
 
-#include <camera.h>
+//#include <camera.h>
 //#include <camera_defs_i.h>
 #include <mm_camera_interface2.h>
 
@@ -82,7 +82,7 @@ public:
     virtual void        stop();
     virtual void        release();
 
-    status_t setFormat(uint8_t ch_type_mask);
+    status_t setFormat(uint8_t ch_type_mask, cam_format_t previewFmt);
     status_t setMode(int enable);
 
     virtual void        setHALCameraControl(QCameraHardwareInterface* ctrl);
@@ -106,6 +106,7 @@ public:
     }
     virtual sp<IMemoryHeap> getHeap() const{return NULL;}
     virtual status_t    initDisplayBuffers(){return NO_ERROR;}
+    virtual status_t initPreviewOnlyBuffers(){return NO_ERROR;}
     virtual sp<IMemoryHeap> getRawHeap() const {return NULL;}
     virtual void *getLastQueuedFrame(void){return NULL;}
     virtual status_t takePictureZSL(void){return NO_ERROR;}
@@ -123,6 +124,7 @@ public:
     virtual status_t freeBuffersBeforeStartPreview(void){return NO_ERROR;}
     virtual void notifyROIEvent(fd_roi_t roi) {;}
     virtual void notifyWDenoiseEvent(cam_ctrl_status_t status, void * cookie) {;}
+    virtual void resetSnapshotCounters(void ){};
 
     /* If preview is stopped due to snapshot, flag will be TRUE;
      * If preview is stopped normally, flag will be FALSE.
@@ -173,6 +175,7 @@ public:
   status_t takeLiveSnapshot();
 private:
   QCameraStream_record(int, camera_mode_t);
+  void releaseEncodeBuffer();
 
   cam_ctrl_dimension_t             dim;
   bool mDebugFps;
@@ -207,8 +210,18 @@ public:
     QCameraStream_preview() {};
     virtual             ~QCameraStream_preview();
     void *getLastQueuedFrame(void);
+    /*init preview buffers with display case*/
     status_t initDisplayBuffers();
+    /*init preview buffers without display case*/
+    status_t initPreviewOnlyBuffers();
+
     status_t processPreviewFrame(mm_camera_ch_data_buf_t *frame);
+
+    /*init preview buffers with display case*/
+    status_t processPreviewFrameWithDisplay(mm_camera_ch_data_buf_t *frame);
+    /*init preview buffers without display case*/
+    status_t processPreviewFrameWithOutDisplay(mm_camera_ch_data_buf_t *frame);
+
     int setPreviewWindow(preview_stream_ops_t* window);
     status_t freeBuffersBeforeStartPreview();
     void notifyROIEvent(fd_roi_t roi);
@@ -217,12 +230,15 @@ public:
     friend class QCameraHardwareInterface;
 
 private:
-    status_t sendMappingBuf(int ext_mode, int idx, int fd, uint32_t size);
-    status_t sendUnMappingBuf(int ext_mode, int idx);
-
     QCameraStream_preview(int cameraId, camera_mode_t);
+    /*allocate and free buffers with display case*/
     status_t                 getBufferFromSurface();
     status_t                 putBufferToSurface();
+
+    /*allocate and free buffers without display case*/
+    status_t                 getBufferNoDisplay();
+    status_t                 freeBufferNoDisplay();
+
     void                     dumpFrameToFile(struct msm_frame* newFrame);
 
     int8_t                   my_id;
@@ -256,6 +272,7 @@ public:
                                  int frame_len);
     status_t receiveRawPicture(mm_camera_ch_data_buf_t* recvd_frame);
     void receiveCompleteJpegPicture(jpeg_event_t event);
+    void jpegErrorHandler(jpeg_event_t event);
     void receiveJpegFragment(uint8_t *ptr, uint32_t size);
     void deInitBuffer(void);
     sp<IMemoryHeap> getRawHeap() const;
@@ -266,6 +283,7 @@ public:
     void setFullSizeLiveshot(bool);
     void notifyWDenoiseEvent(cam_ctrl_status_t status, void * cookie);
     friend void liveshot_callback(mm_camera_ch_data_buf_t *frame,void *user_data);
+    void resetSnapshotCounters(void );
 
 private:
     QCameraStream_Snapshot(int, camera_mode_t);
@@ -276,7 +294,7 @@ private:
     status_t initRawSnapshot(int num_of_snapshots);
     status_t initZSLSnapshot(void);
     status_t initFullLiveshot(void);
-    status_t cancelPicture();
+	status_t cancelPicture();
     void notifyShutter(common_crop_t *crop,
                        bool play_shutter_sound);
     status_t initSnapshotBuffers(cam_ctrl_dimension_t *dim,
@@ -307,11 +325,8 @@ private:
     void stopPolling(void);
     bool isFullSizeLiveshot(void);
     status_t doWaveletDenoise(mm_camera_ch_data_buf_t* frame);
-    status_t sendWDenoiseMappingBuf(int ext_mode, mm_camera_ch_data_buf_t* rcvd_frame, cam_ctrl_dimension_t* dim);
-    status_t sendWDenoiseUnMappingBuf(int ext_mode, int idx);
     status_t sendWDenoiseStartMsg(mm_camera_ch_data_buf_t * frame);
     void lauchNextWDenoiseFromQueue();
-    uint32_t fillFrameInfo(int ext_mode, mm_camera_frame_map_type* frame_info, mm_camera_ch_data_buf_t* rcvd_frame, cam_ctrl_dimension_t* dim);
 
     /* Member variables */
 
@@ -359,7 +374,11 @@ private:
     bool mFullLiveshot;
     StreamQueue             mWDNQueue; // queue to hold frames while one frame is sent out for WDN
     bool                    mIsDoingWDN; // flag to indicate if WDN is going on (one frame is sent out for WDN)
-    bool                    mDropThumbnail;
+	bool                    mDropThumbnail;
+	int                     mJpegQuality;
+
+    bool                    mIsRawChAcquired;
+    bool                    mIsJpegChAcquired;
 }; // QCameraStream_Snapshot
 
 

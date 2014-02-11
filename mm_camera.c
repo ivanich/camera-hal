@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -10,7 +10,7 @@ met:
       copyright notice, this list of conditions and the following
       disclaimer in the documentation and/or other materials provided
       with the distribution.
-    * Neither the name of Code Aurora Forum, Inc. nor the names of its
+    * Neither the name of The Linux Foundation nor the names of its
       contributors may be used to endorse or promote products derived
       from this software without specific prior written permission.
 
@@ -71,7 +71,6 @@ static int32_t mm_camera_ctrl_set_auto_focus (mm_camera_obj_t *my_obj, int value
     memset (&queryctrl, 0, sizeof (queryctrl));
     queryctrl.id = V4L2_CID_FOCUS_AUTO;
 
-    ALOGE("mm_camera_ctrl_set_auto_focus(%d)",value);
     if(value != 0 && value != 1) {
         CDBG("%s:boolean required, invalid value = %d\n",__func__, value);
         return -MM_CAMERA_E_INVALID_INPUT;
@@ -277,10 +276,13 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
                     CAMERA_SET_PARM_FOCUS_RECT, sizeof(int32_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_AEC_ROI:
         return mm_camera_send_native_ctrl_cmd(my_obj,
-                    CAMERA_SET_PARM_AEC_ROI, sizeof(roi_info_t), (void *)parm->p_value);
+                    CAMERA_SET_PARM_AEC_ROI, sizeof(cam_set_aec_roi_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_AF_ROI:
         return mm_camera_send_native_ctrl_cmd(my_obj,
                     CAMERA_SET_PARM_AF_ROI, sizeof(roi_info_t), (void *)parm->p_value);
+    case MM_CAMERA_PARM_FOCUS_MODE:
+        return mm_camera_send_native_ctrl_cmd(my_obj,
+                    CAMERA_SET_PARM_AF_MODE, sizeof(int32_t), (void *)parm->p_value);
 #if 0 //to be enabled later: @punits
     case MM_CAMERA_PARM_AF_MTR_AREA:
         return mm_camera_send_native_ctrl_cmd(my_obj,
@@ -289,10 +291,9 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
         return mm_camera_send_native_ctrl_cmd(my_obj,
                     CAMERA_SET_AEC_MTR_AREA, sizeof(aec_mtr_area_t), (void *)parm->p_value);
 #endif
-    case MM_CAMERA_PARM_FOCUS_MODE:
-        ALOGE("CAMERA_PARM_FOCUS_MODE: %d",*((int *)(parm->p_value)));
+    case MM_CAMERA_PARM_CAF_ENABLE:
         return mm_camera_send_native_ctrl_cmd(my_obj,
-                    CAMERA_SET_PARM_FOCUS_MODE, sizeof(uint32_t), (void *)parm->p_value);
+                    CAMERA_SET_PARM_CAF, sizeof(uint32_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_BESTSHOT_MODE:
         CDBG("%s : MM_CAMERA_PARM_BESTSHOT_MODE value : %d",__func__,*((int *)(parm->p_value)));
         return mm_camera_send_native_ctrl_cmd(my_obj,
@@ -356,37 +357,35 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
         if(my_obj->op_mode == MM_CAMERA_OP_MODE_ZSL){
            isZSL =1;
         }
-        mm_jpeg_encoder_setRotation(*((int *)parm->p_value));
+        mm_jpeg_encoder_setRotation(*((int *)parm->p_value),isZSL);
         return MM_CAMERA_OK;
 
     case MM_CAMERA_PARM_ASD_ENABLE:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_ASD_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
 
-/*    case MM_CAMERA_PARM_RECORDING_HINT:
+    case MM_CAMERA_PARM_RECORDING_HINT:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_RECORDING_HINT, sizeof(uint32_t), (void *)parm->p_value);
-*/
-    case MM_CAMERA_PARM_HDR_MODE:
-      return mm_camera_send_native_ctrl_cmd(my_obj,
-                  CAMERA_SET_HDR_MODE, sizeof(uint32_t), (void *)parm->p_value);
-
 
     case MM_CAMERA_PARM_PREVIEW_FORMAT:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_PARM_PREVIEW_FORMAT, sizeof(uint32_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_DIS_ENABLE:
-      ALOGE("CAMERA_PARM_DIS_ENABLE not supported");
-      return 0;//mm_camera_send_native_ctrl_cmd(my_obj,
-               //   CAMERA_SET_DIS_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
+      return mm_camera_send_native_ctrl_cmd(my_obj,
+                  CAMERA_SET_DIS_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_FULL_LIVESHOT: {
       my_obj->full_liveshot = *((int *)(parm->p_value));
-      ALOGE("full_liveshot = %d",my_obj->full_liveshot);
       return mm_camera_send_native_ctrl_cmd(my_obj,
                   CAMERA_SET_FULL_LIVESHOT, sizeof(uint32_t), (void *)parm->p_value);
     }
+
+    case MM_CAMERA_PARM_LOW_POWER_MODE:
+      return mm_camera_send_native_ctrl_cmd(my_obj,
+                  CAMERA_SET_LOW_POWER_MODE, sizeof(uint32_t), (void *)parm->p_value);
+
     case MM_CAMERA_PARM_HDR:
       return mm_camera_send_native_ctrl_cmd(my_obj,
                         CAMERA_SET_PARM_HDR, sizeof(exp_bracketing_t), (void *)parm->p_value);
@@ -439,23 +438,14 @@ int32_t mm_camera_set_parm(mm_camera_obj_t * my_obj,
         }
         memcpy(&my_obj->dim, (cam_ctrl_dimension_t *)parm->p_value,
                      sizeof(cam_ctrl_dimension_t));
-        CDBG("%s: dw=%d,dh=%d,vw=%d,vh=%d,pw=%d,ph=%d,tw=%d,th=%d,raw_w=%d,raw_h=%d, %d %d %d %d \n",
+        CDBG("%s: dw=%d,dh=%d,vw=%d,vh=%d,pw=%d,ph=%d,tw=%d,th=%d,raw_w=%d,raw_h=%d\n",
                  __func__,
                  my_obj->dim.display_width,my_obj->dim.display_height,
                  my_obj->dim.video_width, my_obj->dim.video_height,
                  my_obj->dim.picture_width,my_obj->dim.picture_height,
                  my_obj->dim.ui_thumbnail_width,my_obj->dim.ui_thumbnail_height,
-                 my_obj->dim.raw_picture_width,my_obj->dim.raw_picture_height,
-                 my_obj->dim.display_frame_offset.sp.len, my_obj->dim.video_frame_offset.sp.len,
-                 my_obj->dim.picture_frame_offset.sp.len, my_obj->dim.thumb_frame_offset.sp.len);
-/*
-          unsigned *p=(char *)&my_obj->dim;
-          int i;
-          for(i=0;i<sizeof(my_obj->dim)/4;i++) {
-              CDBG("%08x ",*p++);
-          }
-*/
-          break;
+                 my_obj->dim.raw_picture_width,my_obj->dim.raw_picture_height);
+        break;
     case MM_CAMERA_PARM_SNAPSHOT_BURST_NUM:
         CDBG("%s: Setting snapshot burst number: %d\n", __func__, *((int *)parm->p_value));
         my_obj->snap_burst_num_by_user = *((int *)parm->p_value);
@@ -517,10 +507,18 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
              dim->width, dim->height);
     }
         break;
+    case MM_CAMERA_PARM_MAX_VIDEO_SIZE: {
+        mm_camera_dimension_t *dim =
+            (mm_camera_dimension_t *)parm->p_value;
+        dim->height = my_obj->properties.max_video_height;
+        dim->width = my_obj->properties.max_video_width;
+        CDBG("%s: Max Video Size: %d X %d\n", __func__,
+             dim->width, dim->height);
+    }
+        break;
     case MM_CAMERA_PARM_MAX_HFR_MODE:
-        ALOGE("CAMERA_PARM_MAX_HFR_MODE not supported");
-        return 0;//mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_MAX_HFR_MODE,
-                //sizeof(camera_hfr_mode_t), (void *)parm->p_value);
+        return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_MAX_HFR_MODE,
+                sizeof(camera_hfr_mode_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_FOCAL_LENGTH:
         return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_FOCAL_LENGTH,
                      sizeof(focus_distances_info_t), (void *)parm->p_value);
@@ -533,7 +531,7 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
     case MM_CAMERA_PARM_FOCUS_DISTANCES:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_GET_PARM_FOCUS_DISTANCES,
                      sizeof(focus_distances_info_t), (void *)parm->p_value);
-  case MM_CAMERA_PARM_QUERY_FLASH4SNAP:
+  case MM_CAMERA_PARM_QUERY_FALSH4SNAP:
         return mm_camera_send_native_ctrl_cmd(my_obj,   CAMERA_QUERY_FLASH_FOR_SNAPSHOT,
                      sizeof(int), (void *)parm->p_value);
   case MM_CAMERA_PARM_3D_FRAME_FORMAT:
@@ -605,6 +603,9 @@ static int mm_camera_evt_sub(mm_camera_obj_t * my_obj,
         if(my_obj->evt_type_mask == (uint32_t)(1 << evt_type)) {
             rc = ioctl(my_obj->ctrl_fd, VIDIOC_UNSUBSCRIBE_EVENT, &sub);
             CDBG("%s: unsubscribe event 0x%x, rc = %d", __func__, sub.type, rc);
+            sub.type = V4L2_EVENT_PRIVATE_START+MSM_CAM_APP_NOTIFY_ERROR_EVENT;
+            rc = ioctl(my_obj->ctrl_fd, VIDIOC_UNSUBSCRIBE_EVENT, &sub);
+            CDBG("%s: unsubscribe event 0x%x, rc = %d", __func__, sub.type, rc);
         }
         my_obj->evt_type_mask &= ~(1 << evt_type);
         if(my_obj->evt_type_mask == 0) {
@@ -614,6 +615,11 @@ static int mm_camera_evt_sub(mm_camera_obj_t * my_obj,
     } else {
         if(!my_obj->evt_type_mask) {
             /* this is the first reg event */
+            rc = ioctl(my_obj->ctrl_fd, VIDIOC_SUBSCRIBE_EVENT, &sub);
+            CDBG("%s: subscribe event 0x%x, rc = %d", __func__, sub.type, rc);
+            if (rc < 0)
+                goto end;
+            sub.type = V4L2_EVENT_PRIVATE_START+MSM_CAM_APP_NOTIFY_ERROR_EVENT;
             rc = ioctl(my_obj->ctrl_fd, VIDIOC_SUBSCRIBE_EVENT, &sub);
             CDBG("%s: subscribe event 0x%x, rc = %d", __func__, sub.type, rc);
             if (rc < 0)
@@ -760,7 +766,9 @@ int32_t mm_camera_action_start(mm_camera_obj_t *my_obj,
     }
     CDBG("%s: ch=%d,op_mode=%d,opcode=%d\n", __func__, ch_type,
       my_obj->op_mode, opcode);
-    if(send_on_off_evt)
+    if(rc != 0)
+        CDBG_ERROR("%s: opmode = %d, error = %d", __func__, my_obj->op_mode, rc);
+    else if(send_on_off_evt)
       rc = mm_camera_send_ch_on_off_event(my_obj,ch_type,MM_CAMERA_CH_EVT_STREAMING_ON);
     return rc;
 }
@@ -878,9 +886,7 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj,
 	ALOGE("%s:  2\n", __func__);
 
     /* open domain socket*/
-
-/*
-    n_try=MM_CAMERA_DEV_OPEN_TRIES;
+/*    n_try=MM_CAMERA_DEV_OPEN_TRIES;
     do{
         n_try--;
         my_obj->ds_fd = mm_camera_socket_create(my_obj->my_id, MM_CAMERA_SOCK_TYPE_UDP); // TODO: UDP for now, change to TCP
@@ -899,7 +905,7 @@ int32_t mm_camera_open(mm_camera_obj_t *my_obj,
     if (my_obj->ds_fd <= 0) {
         CDBG("%s: cannot open domain socket fd of '%s' Errno = %d\n",
                  __func__, mm_camera_util_get_dev_name(my_obj),errno);
-//        return -MM_CAMERA_E_GENERAL;
+        return -MM_CAMERA_E_GENERAL;
     }
 */
     /* set ctrl_fd to be the mem_mapping fd */
@@ -944,30 +950,28 @@ int32_t mm_camera_close(mm_camera_obj_t *my_obj)
 {
     int i, rc = 0;
 
-    for(i = 0; i < MM_CAMERA_CH_MAX; i++){
-        mm_camera_ch_fn(my_obj, (mm_camera_channel_type_t)i,
-                                MM_CAMERA_STATE_EVT_RELEASE, NULL);
-    }
-
     CDBG("%s : Close Threads in Cam Close",__func__);
     for(i = 0; i < MM_CAMERA_CH_MAX; i++) {
         mm_camera_poll_thread_release(my_obj,(mm_camera_channel_type_t)i);
     }
     mm_camera_poll_threads_deinit(my_obj);
+    for(i = 0; i < MM_CAMERA_CH_MAX; i++){
+        mm_camera_ch_fn(my_obj, (mm_camera_channel_type_t)i,
+                                MM_CAMERA_STATE_EVT_RELEASE, NULL);
+    }
     my_obj->op_mode = MM_CAMERA_OP_MODE_NOTUSED;
     if(my_obj->ctrl_fd > 0) {
-        mm_camera_histo_mmap(my_obj, NULL);
         rc = close(my_obj->ctrl_fd);
         if(rc < 0) {
             /* this is a dead end. */
             CDBG("%s: !!!!FATAL ERROR!!!! ctrl_fd = %d, rc = %d",
                  __func__, my_obj->ctrl_fd, rc);
         }
-        my_obj->ctrl_fd = 0;
+        my_obj->ctrl_fd = -1;
     }
     if(my_obj->ds_fd > 0) {
 //        mm_camera_socket_close(my_obj->ds_fd);
-        my_obj->ds_fd = 0;
+        my_obj->ds_fd = -1;
     }
     return MM_CAMERA_OK;
 }
@@ -993,10 +997,8 @@ void mm_camera_ch_release(mm_camera_obj_t *my_obj, mm_camera_channel_type_t ch_t
     mm_camera_ch_fn(my_obj,ch_type, MM_CAMERA_STATE_EVT_RELEASE, 0);
 }
 
-
 int32_t mm_camera_sendmsg(mm_camera_obj_t *my_obj, void *msg, uint32_t buf_size, int sendfd)
 {
-	return 1;
+return 1;
 //    return mm_camera_socket_sendmsg(my_obj->ds_fd, msg, buf_size, sendfd);
 }
-

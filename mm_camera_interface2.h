@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -10,7 +10,7 @@ met:
       copyright notice, this list of conditions and the following
       disclaimer in the documentation and/or other materials provided
       with the distribution.
-    * Neither the name of Code Aurora Forum, Inc. nor the names of its
+    * Neither the name of The Linux Foundation nor the names of its
       contributors may be used to endorse or promote products derived
       from this software without specific prior written permission.
 
@@ -29,9 +29,9 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef __MM_CAMERA_INTERFACE2_H__
 #define __MM_CAMERA_INTERFACE2_H__
-#include <linux/msm_ion.h>
-#include <camera.h>
-#include "mm_jpeg_encoder.h"
+#include <linux/ion.h>
+#include "camera.h"
+#include "mm_omx_jpeg_encoder.h"
 
 #define MM_CAMERA_MAX_NUM_FRAMES        16
 
@@ -67,96 +67,6 @@ typedef enum {
     MM_CAMERA_OP_MODE_ZSL,
     MM_CAMERA_OP_MODE_MAX
 }mm_camera_op_mode_type_t;
-
-/* Add enumenrations at the bottom but before MM_CAMERA_PARM_MAX */
-typedef enum {
-    MM_CAMERA_PARM_PICT_SIZE,
-    MM_CAMERA_PARM_ZOOM_RATIO,
-    MM_CAMERA_PARM_HISTOGRAM,
-    MM_CAMERA_PARM_DIMENSION,
-    MM_CAMERA_PARM_FPS,
-    MM_CAMERA_PARM_FPS_MODE, /*5*/
-    MM_CAMERA_PARM_EFFECT,
-    MM_CAMERA_PARM_EXPOSURE_COMPENSATION,
-    MM_CAMERA_PARM_EXPOSURE,
-    MM_CAMERA_PARM_SHARPNESS,
-    MM_CAMERA_PARM_CONTRAST, /*10*/
-    MM_CAMERA_PARM_SATURATION,
-    MM_CAMERA_PARM_BRIGHTNESS,
-    MM_CAMERA_PARM_WHITE_BALANCE,
-    MM_CAMERA_PARM_LED_MODE,
-    MM_CAMERA_PARM_ANTIBANDING, /*15*/
-    MM_CAMERA_PARM_ROLLOFF,
-    MM_CAMERA_PARM_CONTINUOUS_AF,
-    MM_CAMERA_PARM_FOCUS_RECT,
-    MM_CAMERA_PARM_AEC_ROI,
-    MM_CAMERA_PARM_AF_ROI, /*20*/
-    MM_CAMERA_PARM_HJR,
-    MM_CAMERA_PARM_ISO,
-    MM_CAMERA_PARM_BL_DETECTION,
-    MM_CAMERA_PARM_SNOW_DETECTION,
-    MM_CAMERA_PARM_BESTSHOT_MODE, /*25*/
-    MM_CAMERA_PARM_ZOOM,
-    MM_CAMERA_PARM_VIDEO_DIS,
-    MM_CAMERA_PARM_VIDEO_ROT,
-    MM_CAMERA_PARM_SCE_FACTOR,
-    MM_CAMERA_PARM_FD, /*30*/
-    MM_CAMERA_PARM_MODE,
-    /* 2nd 32 bits */
-    MM_CAMERA_PARM_3D_FRAME_FORMAT,
-    MM_CAMERA_PARM_CAMERA_ID,
-    MM_CAMERA_PARM_CAMERA_INFO,
-    MM_CAMERA_PARM_PREVIEW_SIZE, /*35*/
-    MM_CAMERA_PARM_QUERY_FLASH4SNAP,
-    MM_CAMERA_PARM_FOCUS_DISTANCES,
-    MM_CAMERA_PARM_BUFFER_INFO,
-    MM_CAMERA_PARM_JPEG_ROTATION,
-    MM_CAMERA_PARM_JPEG_MAINIMG_QUALITY, /* 40 */
-    MM_CAMERA_PARM_JPEG_THUMB_QUALITY,
-    MM_CAMERA_PARM_ZSL_ENABLE,
-    MM_CAMERA_PARM_FOCAL_LENGTH,
-    MM_CAMERA_PARM_HORIZONTAL_VIEW_ANGLE,
-    MM_CAMERA_PARM_VERTICAL_VIEW_ANGLE, /* 45 */
-    MM_CAMERA_PARM_MCE,
-    MM_CAMERA_PARM_RESET_LENS_TO_INFINITY,
-    MM_CAMERA_PARM_SNAPSHOTDATA,
-    MM_CAMERA_PARM_HFR,
-    MM_CAMERA_PARM_REDEYE_REDUCTION, /* 50 */
-    MM_CAMERA_PARM_WAVELET_DENOISE,
-    MM_CAMERA_PARM_3D_DISPLAY_DISTANCE,
-    MM_CAMERA_PARM_3D_VIEW_ANGLE,
-    MM_CAMERA_PARM_PREVIEW_FORMAT,
-    MM_CAMERA_PARM_HFR_SIZE, /* 55 */
-    MM_CAMERA_PARM_3D_EFFECT,
-    MM_CAMERA_PARM_3D_MANUAL_CONV_RANGE,
-    MM_CAMERA_PARM_3D_MANUAL_CONV_VALUE,
-    MM_CAMERA_PARM_ENABLE_3D_MANUAL_CONVERGENCE,
-    /* These are new parameters defined here */
-    MM_CAMERA_PARM_CH_IMAGE_FMT, /* 60 */       // mm_camera_ch_image_fmt_parm_t
-    MM_CAMERA_PARM_OP_MODE,             // camera state, sub state also
-    MM_CAMERA_PARM_SHARPNESS_CAP,       //
-    MM_CAMERA_PARM_SNAPSHOT_BURST_NUM,  // num shots per snapshot action
-    MM_CAMERA_PARM_LIVESHOT_MAIN,       // enable/disable full size live shot
-    MM_CAMERA_PARM_MAXZOOM, /* 65 */
-    MM_CAMERA_PARM_LUMA_ADAPTATION,     // enable/disable
-    MM_CAMERA_PARM_HDR,
-    MM_CAMERA_PARM_CROP,
-    MM_CAMERA_PARM_MAX_PICTURE_SIZE,
-    MM_CAMERA_PARM_MAX_PREVIEW_SIZE, /* 70 */
-    MM_CAMERA_PARM_ASD_ENABLE,
-    MM_CAMERA_PARM_RECORDING_HINT,
-    MM_CAMERA_PARM_CAF_ENABLE,
-    MM_CAMERA_PARM_FULL_LIVESHOT,
-    MM_CAMERA_PARM_DIS_ENABLE, /* 75 */
-    MM_CAMERA_PARM_AEC_LOCK,
-    MM_CAMERA_PARM_AWB_LOCK,
-    MM_CAMERA_PARM_AF_MTR_AREA,
-    MM_CAMERA_PARM_AEC_MTR_AREA,
-    MM_CAMERA_PARM_MAX_HFR_MODE, /* 80 */
-    MM_CAMERA_PARM_FOCUS_MODE,
-    MM_CAMERA_PARM_HDR_MODE,
-    MM_CAMERA_PARM_MAX
-} mm_camera_parm_type_t;
 
 #define MM_CAMERA_PARM_SUPPORT_SET      0x01
 #define MM_CAMERA_PARM_SUPPORT_GET      0x02

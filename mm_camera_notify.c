@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
@@ -10,7 +10,7 @@ met:
       copyright notice, this list of conditions and the following
       disclaimer in the documentation and/or other materials provided
       with the distribution.
-    * Neither the name of Code Aurora Forum, Inc. nor the names of its
+    * Neither the name of The Linux Foundation nor the names of its
       contributors may be used to endorse or promote products derived
       from this software without specific prior written permission.
 
@@ -36,15 +36,15 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fcntl.h>
 #include <poll.h>
 #include <linux/msm_ion.h>
-#include <camera.h>
+#include "camera.h"
 #include "mm_camera_interface2.h"
 #include "mm_camera.h"
 
 #if 0
 #undef CDBG
-#undef LOG_TAG
+#undef ALOG_TAG
 #define CDBG ALOGE
-#define LOG_TAG "NotifyLogs"
+#define ALOG_TAG "NotifyLogs"
 #endif
 
 static void mm_camera_read_raw_frame(mm_camera_obj_t * my_obj)
@@ -140,12 +140,21 @@ int mm_camera_zsl_frame_cmp_and_enq(mm_camera_obj_t * my_obj,
         peerstream = &my_obj->ch[MM_CAMERA_CH_SNAPSHOT].snapshot.main;
     } else
         peerstream = &my_obj->ch[MM_CAMERA_CH_PREVIEW].preview.stream;
+
     myq = &mystream->frame.readyq;
     peerq = &peerstream->frame.readyq;
     watermark = my_obj->ch[MM_CAMERA_CH_SNAPSHOT].buffering_frame.water_mark;
     /* lock both queues */
     pthread_mutex_lock(pSnapshotMutex);
     pthread_mutex_lock(pPreviewMutex);
+
+    if(MM_CAMERA_STREAM_STATE_NOTUSED == mystream->state || MM_CAMERA_STREAM_STATE_NOTUSED == peerstream->state) {
+        CDBG_ERROR("%s: one or two streams have been released, not processing here", __func__);
+        pthread_mutex_unlock(&my_obj->ch[MM_CAMERA_CH_SNAPSHOT].mutex);
+        pthread_mutex_unlock(&my_obj->ch[MM_CAMERA_CH_PREVIEW].mutex);
+        return rc;
+    }
+
     peer_frame = peerq->tail;
     /* for 30-120 fps streaming no need to consider the wrapping back of frame_id */
     if(!peer_frame || node->frame.frame_id > peer_frame->frame.frame_id) {
@@ -355,6 +364,12 @@ end:
               &my_obj->ch[MM_CAMERA_CH_PREVIEW].preview.stream, &deliver_done);
     pthread_mutex_unlock(pPreviewMutex);
     pthread_mutex_unlock(pSnapshotMutex);
+    if(MM_CAMERA_STREAM_STATE_NOTUSED == mystream->state || MM_CAMERA_STREAM_STATE_NOTUSED == peerstream->state) {
+        CDBG("%s: one or two streams have been released, not processing here", __func__);
+        pthread_mutex_unlock(&my_obj->ch[MM_CAMERA_CH_SNAPSHOT].mutex);
+        pthread_mutex_unlock(&my_obj->ch[MM_CAMERA_CH_PREVIEW].mutex);
+        return 0;
+    }
     if(deliver_done > 0) {
         mm_camera_event_t data;
         CDBG("%s: ZSL delivered", __func__);
@@ -372,7 +387,15 @@ static void mm_camera_read_preview_frame(mm_camera_obj_t * my_obj)
     int idx;
     int i;
     mm_camera_stream_t *stream;
-
+    if (NULL == my_obj) {
+      return;
+    }
+    pthread_mutex_lock(&my_obj->ch[MM_CAMERA_CH_PREVIEW].mutex);
+    if (!my_obj->ch[MM_CAMERA_CH_PREVIEW].acquired) {
+      pthread_mutex_unlock(&my_obj->ch[MM_CAMERA_CH_PREVIEW].mutex);
+      return;
+    }
+    pthread_mutex_unlock(&my_obj->ch[MM_CAMERA_CH_PREVIEW].mutex);
     stream = &my_obj->ch[MM_CAMERA_CH_PREVIEW].preview.stream;
     idx =  mm_camera_read_msm_frame(my_obj, stream);
     if (idx < 0) {
@@ -728,88 +751,6 @@ void mm_camera_dispatch_app_event(mm_camera_obj_t *my_obj, mm_camera_event_t *ev
     }
 }
 
-void mm_camera_histo_mmap(mm_camera_obj_t * my_obj, mm_camera_event_t *evt)
-{
-    int i, *ret;
-    int rc = MM_CAMERA_OK;
-    off_t offset = 0;
-
-    CDBG("%s", __func__);
-    if(!evt || evt->e.info.e.histo_mem_info.num == 0 || my_obj->hist_mem_map.num) {
-        for(i = 0; i < my_obj->hist_mem_map.num; i++) {
-            munmap((void *)my_obj->hist_mem_map.entry[i].vaddr,
-            my_obj->hist_mem_map.entry[i].cookie.length);
-        }
-        memset(&my_obj->hist_mem_map, 0,
-            sizeof(my_obj->hist_mem_map));
-    }
-    if(!evt)
-        return;
-    if (evt->e.info.e.histo_mem_info.num > 0) {
-        for(i = 0; i < evt->e.info.e.histo_mem_info.num; i++) {
-            my_obj->hist_mem_map.entry[i].cookie.cookie =
-            evt->e.info.e.histo_mem_info.vaddr[i];
-            my_obj->hist_mem_map.entry[i].cookie.length =
-            evt->e.info.e.histo_mem_info.buf_len;
-            my_obj->hist_mem_map.entry[i].cookie.mem_type =
-            evt->e.info.e.histo_mem_info.pmem_type;
-            rc = mm_camera_util_s_ctrl(my_obj->ctrl_fd, MSM_V4L2_PID_MMAP_ENTRY,
-                    (int)&my_obj->hist_mem_map.entry[i].cookie);
-            if( rc < 0) {
-                CDBG("%s: MSM_V4L2_PID_MMAP_ENTRY error", __func__);
-                goto err;
-            }
-            ret = mmap(NULL, my_obj->hist_mem_map.entry[i].cookie.length,
-                  (PROT_READ  | PROT_WRITE), MAP_SHARED, my_obj->ctrl_fd, offset);
-            if(ret == MAP_FAILED) {
-                CDBG("%s: mmap error at idx %d", __func__, i);
-                goto err;
-            }
-            my_obj->hist_mem_map.entry[i].vaddr = (uint32_t)ret;
-            my_obj->hist_mem_map.num++;
-            CDBG("%s: mmap, idx=%d,cookie=0x%x,length=%d,pmem_type=%d,vaddr=0x%x",
-                __func__, i,
-                my_obj->hist_mem_map.entry[i].cookie.cookie,
-                my_obj->hist_mem_map.entry[i].cookie.length,
-                my_obj->hist_mem_map.entry[i].cookie.mem_type,
-                my_obj->hist_mem_map.entry[i].vaddr);
-        }
-    }
-    return;
-err:
-    for(i = 0; i < my_obj->hist_mem_map.num; i++) {
-        munmap((void *)my_obj->hist_mem_map.entry[i].vaddr,
-        my_obj->hist_mem_map.entry[i].cookie.length);
-    }
-    memset(&my_obj->hist_mem_map, 0,
-    sizeof(my_obj->hist_mem_map));
-}
-
-static int mm_camera_histo_fill_vaddr(mm_camera_obj_t *my_obj, mm_camera_event_t *evt)
-{
-    int i, rc = -1;
-
-    for(i = 0; i < my_obj->hist_mem_map.num; i++) {
-        if(my_obj->hist_mem_map.entry[i].cookie.cookie ==
-                evt->e.stats.e.stats_histo.cookie) {
-            rc = MM_CAMERA_OK;
-            evt->e.stats.e.stats_histo.histo_info =
-              my_obj->hist_mem_map.entry[i].vaddr + 512;
-            evt->e.stats.e.stats_histo.histo_len =
-              my_obj->hist_mem_map.entry[i].cookie.length - 512;
-            CDBG("%s: histo stats addr: cookie=0x%x, vaddr = 0x%x, len = %d",
-                __func__, my_obj->hist_mem_map.entry[i].cookie.cookie,
-                my_obj->hist_mem_map.entry[i].vaddr,
-                my_obj->hist_mem_map.entry[i].cookie.length);
-            CDBG("%s: histo stats addr: vaddr = 0x%x, len = %d",
-                __func__, evt->e.stats.e.stats_histo.histo_info,
-                evt->e.stats.e.stats_histo.histo_len);
-            break;
-        }
-    }
-    return rc;
-}
-
 void mm_camera_msm_evt_notify(mm_camera_obj_t * my_obj, int fd)
 {
     struct v4l2_event ev;
@@ -820,34 +761,18 @@ void mm_camera_msm_evt_notify(mm_camera_obj_t * my_obj, int fd)
     rc = ioctl(fd, VIDIOC_DQEVENT, &ev);
     evt = (mm_camera_event_t *)ev.u.data;
 
+    if(ev.type == V4L2_EVENT_PRIVATE_START+MSM_CAM_APP_NOTIFY_ERROR_EVENT) {
+        evt->event_type = MM_CAMERA_EVT_TYPE_CTRL;
+        evt->e.ctrl.evt = MM_CAMERA_CTRL_EVT_ERROR;
+        mm_camera_dispatch_app_event(my_obj, evt);
+        return;
+    }
+
     if (rc >= 0) {
-//        CDBG("%s: VIDIOC_DQEVENT type = 0x%x, app event type = %d\n",
-//            __func__, ev.type, evt->event_type);
         switch(evt->event_type) {
         case MM_CAMERA_EVT_TYPE_INFO:
-            switch(evt->e.info.event_id) {
-            case MM_CAMERA_INFO_EVT_HISTO_MEM_INFO:
-                /* now mm_camear_interface2 hides the
-                 * pmem mapping logic from HAL */
-                mm_camera_histo_mmap(my_obj, evt);
-                return;
-            default:
-                break;
-            }
-            break;
+           break;
         case MM_CAMERA_EVT_TYPE_STATS:
-            switch(evt->e.stats.event_id) {
-            case MM_CAMERA_STATS_EVT_HISTO:
-                rc = mm_camera_histo_fill_vaddr(my_obj, evt);
-                if(rc != MM_CAMERA_OK) {
-                    CDBG("%s:cannot find histo stat's vaddr (cookie=0x%x)",
-                        __func__, evt->e.stats.e.stats_histo.cookie);
-                    return;
-                }
-                break;
-           default:
-               break;
-           }
            break;
         default:
             break;

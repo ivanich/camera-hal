@@ -1,4 +1,4 @@
-/* Copyright (c) 2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2011, The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -9,7 +9,7 @@
  *       copyright notice, this list of conditions and the following
  *       disclaimer in the documentation and/or other materials provided
  *       with the distribution.
- *     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+ *     * Neither the name of The Linux Foundation nor the names of its
  *       contributors may be used to endorse or promote products derived
  *       from this software without specific prior written permission.
  *
@@ -28,9 +28,9 @@
  */
 /*#error uncomment this for compiler test!*/
 
-//#define LOG_NDEBUG 0
-#define LOG_NIDEBUG 0
-#define LOG_TAG "QualcommCamera"
+//#define ALOG_NDEBUG 0
+#define ALOG_NIDEBUG 0
+#define ALOG_TAG "QualcommCamera"
 #include <utils/Log.h>
 #include <utils/threads.h>
 #include <fcntl.h>
@@ -68,7 +68,7 @@ static hw_module_t camera_common  = {
   author:"Qcom",
   methods: &camera_module_methods,
   dso: NULL,
-  reserved:  {0},
+  //reserved[0]:  0,
 };
 camera_module_t HAL_MODULE_INFO_SYM = {
   common: camera_common,
@@ -104,11 +104,6 @@ camera_device_ops_t camera_ops = {
   put_parameters:             android::put_parameters,
   send_command:               android::send_command,
 
-#ifdef USE_GET_VIDEO_BUFFER
-  get_number_of_video_buffers: NULL,
-  get_video_buffer:            NULL,
-#endif
-
   release:                    android::release,
   dump:                       android::dump,
 };
@@ -121,7 +116,7 @@ typedef struct {
   QCameraHardwareInterface *hardware;
   int camera_released;
   int cameraId;
-  //CameraParameters parameters;
+  //QCameraParameters parameters;
 } camera_hardware_t;
 
 typedef struct {
@@ -143,9 +138,9 @@ QCameraHardwareInterface *util_get_Hal_obj( struct camera_device * device)
 }
 
 #if 0 //mzhu
-CameraParameters* util_get_HAL_parameter( struct camera_device * device)
+QCameraParameters* util_get_HAL_parameter( struct camera_device * device)
 {
-    CameraParameters *param = NULL;
+    QCameraParameters *param = NULL;
     if(device && device->priv){
         camera_hardware_t *camHal = (camera_hardware_t *)device->priv;
         param = &(camHal->parameters);
@@ -211,6 +206,10 @@ extern "C" int  camera_device_open(
                 device->priv = (void *)camHal;
                 rc =  0;
             } else {
+                if (camHal->hardware) {
+                    delete camHal->hardware;
+                    camHal->hardware = NULL;
+                }
                 free(camHal);
                 device = NULL;
             }
@@ -285,7 +284,7 @@ void enable_msg_type(struct camera_device * device, int32_t msg_type)
 void disable_msg_type(struct camera_device * device, int32_t msg_type)
 {
     QCameraHardwareInterface *hardware = util_get_Hal_obj(device);
-    ALOGE("Q%s: E %d", __func__,msg_type);
+    ALOGE("Q%s: E", __func__);
     if(hardware != NULL){
         hardware->disableMsgType(msg_type);
     }
@@ -438,15 +437,14 @@ int set_parameters(struct camera_device * device, const char *parms)
     int rc = -1;
     QCameraHardwareInterface *hardware = util_get_Hal_obj(device);
     if(hardware != NULL && parms){
-        //CameraParameters param;// = util_get_HAL_parameter(device);
+        //QCameraParameters param;// = util_get_HAL_parameter(device);
         //String8 str = String8(parms);
 
         //param.unflatten(str);
         rc = hardware->setParameters(parms);
         //rc = 0;
-    }
-    ALOGE("Q%s: X", __func__);
-    return rc;
+  }
+  return rc;
 }
 
 char* get_parameters(struct camera_device * device)
@@ -467,9 +465,7 @@ void put_parameters(struct camera_device * device, char *parm)
     ALOGE("Q%s: E", __func__);
     QCameraHardwareInterface *hardware = util_get_Hal_obj(device);
     if(hardware != NULL){
-        if(hardware != NULL){
-            hardware->putParameters(parm );
-        }
+      hardware->putParameters(parm);
     }
 }
 
