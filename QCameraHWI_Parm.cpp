@@ -889,11 +889,11 @@ void QCameraHardwareInterface::initDefaultParameters()
     if (cam_config_is_parm_supported(mCameraId, MM_CAMERA_PARM_FPS)) {
         mParameters.set(QCameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATES,
                         mPreviewFrameRateValues.string());
-     } /* else {
+     }  else {
         mParameters.set(
             QCameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATES,
             DEFAULT_FPS);
-    }*/
+    }
 
     //Set Preview Frame Rate Modes
     mParameters.setPreviewFrameRateMode("frame-rate-auto");
@@ -981,12 +981,12 @@ void QCameraHardwareInterface::initDefaultParameters()
     }
 
     //8960 supports Power modes : Low power, Normal Power.
-    mParameters.set("power-mode-supported", "true");
+//    mParameters.set("power-mode-supported", "true");
     //Set Live shot support
     mParameters.set("video-snapshot-supported", "true");
 
     //Set default power mode
-    mParameters.set(QCameraParameters::KEY_POWER_MODE,"Normal_Power");
+//    mParameters.set(QCameraParameters::KEY_POWER_MODE,"Normal_Power");
 
     //Set Camera Mode
     mParameters.set(QCameraParameters::KEY_CAMERA_MODE,0);
@@ -1256,7 +1256,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     status_t rc, final_rc = NO_ERROR;
 
     if ((rc = setCameraMode(params)))                   final_rc = rc;
-    if ((rc = setPowerMode(params)))                    final_rc = rc;
+//    if ((rc = setPowerMode(params)))                    final_rc = rc;
     if ((rc = setPreviewSize(params)))                  final_rc = rc;
     if ((rc = setVideoSize(params)))                    final_rc = rc;
     if ((rc = setPictureSize(params)))                  final_rc = rc;
@@ -1315,7 +1315,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     // setHighFrameRate needs to be done at end, as there can
     // be a preview restart, and need to use the updated parameters
     if ((rc = setHighFrameRate(params)))  final_rc = rc;
-    if ((rc = setNoDisplayMode(params))) final_rc = rc;
+//    if ((rc = setNoDisplayMode(params))) final_rc = rc;
 
     //Update Exiftag values.
     setExifTags();
@@ -2209,12 +2209,12 @@ status_t QCameraHardwareInterface::setPreviewFrameRate(const QCameraParameters& 
     uint16_t previousFps = (uint16_t)mParameters.getPreviewFrameRate();
     uint16_t fps = (uint16_t)params.getPreviewFrameRate();
     ALOGV("requested preview frame rate  is %u", fps);
-
+/*
     if(mInitialized && (fps == previousFps)){
         ALOGV("No change is FPS Value %d",fps );
         return NO_ERROR;
     }
-
+*/
     if(MINIMUM_FPS <= fps && fps <=MAXIMUM_FPS){
         mParameters.setPreviewFrameRate(fps);
         bool ret = native_set_parms(MM_CAMERA_PARM_FPS,
@@ -3431,7 +3431,7 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
     }
 
     /* Get maximum video size supported by sensor*/
-    memset(&dim, 0, sizeof(mm_camera_dimension_t));
+/*    memset(&dim, 0, sizeof(mm_camera_dimension_t));
     ret = cam_config_get_parm(mCameraId,
                               MM_CAMERA_PARM_MAX_VIDEO_SIZE, &dim);
     if(ret != NO_ERROR) {
@@ -3448,8 +3448,8 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
          dim.width, dim.height);
 
     for(i=0; i < video_table_size; i++) {
-        /* We'll store those dimensions whose width AND height
-           are less than or equal to maximum supported */
+         We'll store those dimensions whose width AND height
+           are less than or equal to maximum supported 
         if((video_size_table->width <= dim.width) &&
             (video_size_table->height <= dim.height)) {
             ALOGD("%s: Supported Video Size [%d] = %dx%d", __func__, count, video_size_table->width,
@@ -3459,8 +3459,12 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
             count++;
         }
         video_size_table++;
-    }
-    mVideoSizeCount = count;
+    }*/
+//    video_size_table = default_video_sizes;
+    free(mVideoSizes);
+    mVideoSizes = NULL;
+    mVideoSizes = video_size_table;
+    mVideoSizeCount = video_table_size;
 
 end:
     ALOGE("%s: X", __func__);
