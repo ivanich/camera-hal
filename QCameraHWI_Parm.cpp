@@ -137,17 +137,18 @@ static camera_size_type jpeg_thumbnail_sizes[]  = {
 { 432, 288 },
 { 512, 384 },
 { 352, 288 },
-{ 320, 240 },
-{ 176, 144 },
+{ 640, 480 },
+//{ 320, 240 },
+//{ 176, 144 },
 {0,0}
 };
 
 static camera_size_type default_preview_sizes[] = {
   { 1920, 1088}, //1080p
   { 1280, 720}, // 720P, reserved
-//  { 960, 720}, // for panorama
+  { 960, 720}, // for panorama
   { 800, 480}, // WVGA
-  { 768, 432},
+//  { 768, 432},
   { 720, 480},
   { 640, 480}, // VGA
   { 576, 432},
@@ -162,9 +163,9 @@ static camera_size_type default_preview_sizes[] = {
 static camera_size_type default_video_sizes[] = {
   { 1920, 1088},// 1080p
   { 1280, 720}, // 720p
-//  { 960, 720},  // for panorama
+  { 960, 720},  // for panorama
   { 800, 480},  // WVGA
-//  { 768, 432},
+  { 768, 432},
   { 720, 480},  // 480p
   { 640, 480},  // VGA
   { 480, 320},  // HVGA
@@ -187,10 +188,10 @@ static struct camera_size_type zsl_picture_sizes[] = {
 static camera_size_type default_picture_sizes[] = {
   { 4000, 3000}, // 12MP
   { 3264, 2448}, // 8MP
-//  { 3264, 1840}, // 6MP
+  { 3264, 1840}, // 6MP
   { 2592, 1944}, // 5MP
-//  { 2992, 1680},
-//  { 2592, 1456},
+  { 2992, 1680},
+  { 2592, 1456},
   { 2048, 1536}, // 3MP QXGA
   { 1920, 1088}, //HD1080
   { 1600, 1200}, // 2MP UXGA
