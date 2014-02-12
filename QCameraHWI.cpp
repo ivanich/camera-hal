@@ -2207,7 +2207,7 @@ int QCameraHardwareInterface::allocate_ion_memory(QCameraHalHeap_t *p_camera_mem
 
   rc = ioctl(p_camera_memory->main_ion_fd[cnt], ION_IOC_ALLOC, &p_camera_memory->alloc[cnt]);
   if (rc < 0) {
-    ALOGE("ION allocation failed\n");
+    ALOGE("ION allocation failed HAL HEAP\n");
     goto ION_ALLOC_FAILED;
   }
 
@@ -2259,11 +2259,13 @@ int QCameraHardwareInterface::allocate_ion_memory(QCameraStatHeap_t *p_camera_me
   /* to make it page size aligned */
   p_camera_memory->alloc[cnt].len = (p_camera_memory->alloc[cnt].len + 4095) & (~4095);
   p_camera_memory->alloc[cnt].align = 4096;
+//  p_camera_memory->alloc[cnt].flags = ION_FLAG_CACHED;
+//  p_camera_memory->alloc[cnt].heap_mask = ion_type;
   p_camera_memory->alloc[cnt].flags = (0x1 << ion_type | 0x1 << ION_IOMMU_HEAP_ID);
 
   rc = ioctl(p_camera_memory->main_ion_fd[cnt], ION_IOC_ALLOC, &p_camera_memory->alloc[cnt]);
   if (rc < 0) {
-    ALOGE("ION allocation failed\n");
+    ALOGE("ION allocation failed StatHEAP\n");
     goto ION_ALLOC_FAILED;
   }
 
@@ -2335,7 +2337,7 @@ int QCameraHardwareInterface::initHeapMem( QCameraHalHeap_t *heap,
 {
     int rc = 0;
     int i;
-    int path;
+    int path=0;
     struct msm_frame *frame;
     ALOGE("Init Heap =%p. stream_buf =%p, pmem_type =%d, num_of_buf=%d. buf_len=%d, cbcr_off=%d",
          heap, StreamBuf, pmem_type, num_of_buf, buf_len, cbcr_off);
@@ -2350,6 +2352,7 @@ int QCameraHardwareInterface::initHeapMem( QCameraHalHeap_t *heap,
         heap->main_ion_fd[i] = -1;
         heap->fd[i] = -1;
     }
+
     heap->buffer_count = num_of_buf;
     heap->size = buf_len;
     heap->y_offset = y_off;
@@ -2380,7 +2383,7 @@ int QCameraHardwareInterface::initHeapMem( QCameraHalHeap_t *heap,
 //      rc = allocate_ion_memory(heap, i, ION_CP_MM_HEAP_ID);
         rc = allocate_ion_memory(heap, i, (0x1 << ION_CAMERA_HEAP_ID));
         if (rc < 0) {
-            ALOGE("%sION allocation failed\n", __func__);
+            ALOGE("%sION allocation failed MAIN!\n", __func__);
             break;
         }
 #else

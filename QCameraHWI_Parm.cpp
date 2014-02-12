@@ -60,7 +60,7 @@ extern "C" {
 #include <sys/system_properties.h>
 #include <sys/time.h>
 #include <stdlib.h>
-#include <linux/ion.h>
+#include <linux/msm_ion.h>
 //#include <camera.h>
 //#include <cam_fifo.h>
 //#include <liveshot.h>
@@ -1315,7 +1315,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     // setHighFrameRate needs to be done at end, as there can
     // be a preview restart, and need to use the updated parameters
     if ((rc = setHighFrameRate(params)))  final_rc = rc;
-//    if ((rc = setNoDisplayMode(params))) final_rc = rc;
+    if ((rc = setNoDisplayMode(params))) final_rc = rc;
 
     //Update Exiftag values.
     setExifTags();
@@ -3531,7 +3531,7 @@ status_t QCameraHardwareInterface::setHistogram(int histogram_en)
                 }
                 mHistServer.size = sizeof(camera_preview_histogram_info);
 #ifdef USE_ION
-                if(allocate_ion_memory(&mHistServer, cnt, ION_CP_MM_HEAP_ID) < 0) {
+                if(allocate_ion_memory(&mHistServer, cnt, (0x1 << ION_CP_MM_HEAP_ID)) < 0) {
                   ALOGE("%s ION alloc failed\n", __func__);
                   return -1;
                 }

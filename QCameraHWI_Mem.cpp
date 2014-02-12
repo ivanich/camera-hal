@@ -1,5 +1,5 @@
 /*
-** Copyright (c) 2011-2012 The Linux Foundation. All rights reserved.
+** Copyright (c) 2011-2012 Code Aurora Forum. All rights reserved.
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,14 +16,14 @@
 
 /*#error uncomment this for compiler test!*/
 
-//#define ALOG_NDEBUG 0
-#define ALOG_NIDEBUG 0
-#define ALOG_TAG "QCameraHWI_Mem"
+//#define LOG_NDEBUG 0
+#define LOG_NIDEBUG 0
+#define LOG_TAG "QCameraHWI_Mem"
 #include <utils/Log.h>
 
 #include <utils/Errors.h>
 #include <utils/threads.h>
-//#include <binder/MemoryHeapPmem.h>
+#include <binder/MemoryHeapPmem.h>
 #include <utils/String16.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -228,6 +228,7 @@ bool register_record_buffers(bool register_buffer) {
     return true;
 }
 #endif
+#ifndef USE_ION
 PmemPool::PmemPool(const char *pmem_pool,
                                            int flags,
                                            int pmem_type,
@@ -244,7 +245,7 @@ PmemPool::PmemPool(const char *pmem_pool,
          mName,
          pmem_pool, num_buffers, frame_size,
          buffer_size);
-#if 0
+
     //mMMCameraDLRef = MMCameraDL::getInstance();
 
 
@@ -332,7 +333,6 @@ PmemPool::PmemPool(const char *pmem_pool,
     else ALOGE("pmem pool %s error: could not create master heap!",
               pmem_pool);
     ALOGI("%s: (%s) X ", __FUNCTION__, mName);
-#endif
 }
 
 PmemPool::~PmemPool()
@@ -364,6 +364,8 @@ PmemPool::~PmemPool()
 #endif
     ALOGI("%s: %s X", __FUNCTION__, mName);
 }
+#endif
+
 MemPool::~MemPool()
 {
     ALOGV("destroying MemPool %s", mName);
@@ -399,4 +401,5 @@ status_t MemPool::dump(int fd, const Vector<String16>& args) const
     write(fd, result.string(), result.size());
     return NO_ERROR;
 }
+
 };
