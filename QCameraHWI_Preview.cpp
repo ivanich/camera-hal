@@ -894,7 +894,7 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
   mHalCamCtrl->mCallbackLock.lock();
   camera_data_callback pcb = mHalCamCtrl->mDataCb;
   mHalCamCtrl->mCallbackLock.unlock();
-  ALOGE("Message enabled = 0x%x", mHalCamCtrl->mMsgEnabled);
+  ALOGV("Message enabled = 0x%x", mHalCamCtrl->mMsgEnabled);
 
   camera_memory_t *previewMem = NULL;
   if (pcb != NULL) {
@@ -926,10 +926,10 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
       ALOGV("%s: msgType=0x%x, data =%p, metadata=%p", __func__, msgType, data, metadata);
       if(msgType) {
           mStopCallbackLock.unlock();
-	  ALOGE("before pcb");
+	  ALOGV("before pcb");
           if(mActive)
             pcb(msgType, data, 0, metadata, mHalCamCtrl->mCallbackCookie);
-	  ALOGE("after pcb");
+	  ALOGV("after pcb");
           if (previewMem)
               previewMem->release(previewMem);
       }else{
