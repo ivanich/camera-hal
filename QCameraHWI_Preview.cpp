@@ -464,7 +464,6 @@ status_t QCameraStream_preview::initDisplayBuffers()
   memset(&mDisplayStreamBuf, 0, sizeof(mDisplayStreamBuf));
   this->mDisplayStreamBuf.num = mHalCamCtrl->mPreviewMemory.buffer_count;
   this->myMode=myMode; /*Need to assign this in constructor after translating from mask*/
-  num_planes = dim.display_frame_offset.num_planes;
   for (i=0; i< num_planes; i++) {
     planes[i] = dim.display_frame_offset.mp[i].len;
   }
@@ -799,11 +798,11 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
   mHalCamCtrl->mPreviewMemoryLock.lock();
   mNotifyBuffer[frame->def.idx] = *frame;
 
-  ALOGI("Enqueue buf handle %p\n",
+  ALOGV("Enqueue buf handle %p\n",
   mHalCamCtrl->mPreviewMemory.buffer_handle[frame->def.idx]);
-  ALOGD("%s: camera call genlock_unlock", __FUNCTION__);
+  ALOGV("%s: camera call genlock_unlock", __FUNCTION__);
     if (BUFFER_LOCKED == mHalCamCtrl->mPreviewMemory.local_flag[frame->def.idx]) {
-      ALOGD("%s: genlock_unlock_buffer hdl =%p", __FUNCTION__, (*mHalCamCtrl->mPreviewMemory.buffer_handle[frame->def.idx]));
+      ALOGV("%s: genlock_unlock_buffer hdl =%p", __FUNCTION__, (*mHalCamCtrl->mPreviewMemory.buffer_handle[frame->def.idx]));
         if (GENLOCK_FAILURE == genlock_unlock_buffer((native_handle_t*)
 	            (*mHalCamCtrl->mPreviewMemory.buffer_handle[frame->def.idx]))) {
             ALOGE("%s: genlock_unlock_buffer failed", __FUNCTION__);
@@ -836,7 +835,7 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
   if(err != 0) {
     ALOGE("%s: enqueue_buffer failed, err = %d", __func__, err);
   } else {
-   ALOGD("%s: enqueue_buffer hdl=%p", __func__, *mHalCamCtrl->mPreviewMemory.buffer_handle[frame->def.idx]);
+   ALOGV("%s: enqueue_buffer hdl=%p", __func__, *mHalCamCtrl->mPreviewMemory.buffer_handle[frame->def.idx]);
     mHalCamCtrl->mPreviewMemory.local_flag[frame->def.idx] = BUFFER_NOT_OWNED;
   }
   buffer_handle_t *buffer_handle = NULL;
@@ -845,7 +844,7 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
               &buffer_handle, &tmp_stride);
   if (err == NO_ERROR && buffer_handle != NULL) {
 
-    ALOGD("%s: dequed buf hdl =%p", __func__, *buffer_handle);
+    ALOGV("%s: dequed buf hdl =%p", __func__, *buffer_handle);
     for(i = 0; i < mHalCamCtrl->mPreviewMemory.buffer_count; i++) {
         if(mHalCamCtrl->mPreviewMemory.buffer_handle[i] == buffer_handle) {
           mHalCamCtrl->mPreviewMemory.local_flag[i] = BUFFER_UNLOCKED;
@@ -854,7 +853,7 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
     }
      if (i < mHalCamCtrl->mPreviewMemory.buffer_count ) {
       err = this->mPreviewWindow->lock_buffer(this->mPreviewWindow, buffer_handle);
-      ALOGD("%s: camera call genlock_lock: hdl =%p", __FUNCTION__, *buffer_handle);
+      ALOGV("%s: camera call genlock_lock: hdl =%p", __FUNCTION__, *buffer_handle);
       if (GENLOCK_FAILURE == genlock_lock_buffer((native_handle_t*)(*buffer_handle), GENLOCK_WRITE_LOCK,
                                                  GENLOCK_MAX_TIMEOUT)) {
             ALOGE("%s: genlock_lock_buffer(WRITE) failed", __FUNCTION__);
@@ -894,7 +893,7 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
   mHalCamCtrl->mCallbackLock.lock();
   camera_data_callback pcb = mHalCamCtrl->mDataCb;
   mHalCamCtrl->mCallbackLock.unlock();
-  ALOGE("Message enabled = 0x%x", mHalCamCtrl->mMsgEnabled);
+  ALOGV("Message enabled = 0x%x", mHalCamCtrl->mMsgEnabled);
 
   camera_memory_t *previewMem = NULL;
   if (pcb != NULL) {
@@ -923,19 +922,19 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
       } else {
           metadata = NULL;
       }
-      ALOGD("%s: msgType=0x%x, data =%p, metadata=%p", __func__, msgType, data, metadata);
+      ALOGV("%s: msgType=0x%x, data =%p, metadata=%p", __func__, msgType, data, metadata);
       if(msgType) {
           mStopCallbackLock.unlock();
-	  ALOGE("before pcb");
+	  ALOGV("before pcb");
           if(mActive)
             pcb(msgType, data, 0, metadata, mHalCamCtrl->mCallbackCookie);
-	  ALOGE("after pcb");
+	  ALOGV("after pcb");
           if (previewMem)
               previewMem->release(previewMem);
       }else{
           mStopCallbackLock.unlock();
       }
-	  ALOGD("end of cb");
+	  ALOGV("end of cb");
   } else {
     ALOGD("%s PCB is not enabled", __func__);
     mStopCallbackLock.unlock();

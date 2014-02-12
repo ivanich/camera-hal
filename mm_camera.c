@@ -444,7 +444,9 @@ int32_t mm_camera_set_parm(mm_camera_obj_t * my_obj,
                  my_obj->dim.video_width, my_obj->dim.video_height,
                  my_obj->dim.picture_width,my_obj->dim.picture_height,
                  my_obj->dim.ui_thumbnail_width,my_obj->dim.ui_thumbnail_height,
-                 my_obj->dim.raw_picture_width,my_obj->dim.raw_picture_height);
+                 my_obj->dim.raw_picture_width,my_obj->dim.raw_picture_height,
+                 my_obj->dim.display_frame_offset.sp.len, my_obj->dim.video_frame_offset.sp.len,
+                 my_obj->dim.picture_frame_offset.sp.len, my_obj->dim.thumb_frame_offset.sp.len);
         break;
     case MM_CAMERA_PARM_SNAPSHOT_BURST_NUM:
         CDBG("%s: Setting snapshot burst number: %d\n", __func__, *((int *)parm->p_value));

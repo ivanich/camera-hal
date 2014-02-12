@@ -982,12 +982,12 @@ void QCameraHardwareInterface::initDefaultParameters()
     }
 
     //8960 supports Power modes : Low power, Normal Power.
-//    mParameters.set("power-mode-supported", "true");
+    mParameters.set("power-mode-supported", "true");
     //Set Live shot support
     mParameters.set("video-snapshot-supported", "true");
 
     //Set default power mode
-//    mParameters.set(QCameraParameters::KEY_POWER_MODE,"Normal_Power");
+    mParameters.set(QCameraParameters::KEY_POWER_MODE,"Normal_Power");
 
     //Set Camera Mode
     mParameters.set(QCameraParameters::KEY_CAMERA_MODE,0);
@@ -1257,7 +1257,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     status_t rc, final_rc = NO_ERROR;
 
     if ((rc = setCameraMode(params)))                   final_rc = rc;
-//    if ((rc = setPowerMode(params)))                    final_rc = rc;
+    if ((rc = setPowerMode(params)))                    final_rc = rc;
     if ((rc = setPreviewSize(params)))                  final_rc = rc;
     if ((rc = setVideoSize(params)))                    final_rc = rc;
     if ((rc = setPictureSize(params)))                  final_rc = rc;
@@ -3462,8 +3462,8 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
         video_size_table++;
     }*/
 //    video_size_table = default_video_sizes;
-    free(mVideoSizes);
-    mVideoSizes = NULL;
+//    free(mVideoSizes);
+//    mVideoSizes = NULL;
     mVideoSizes = video_size_table;
     mVideoSizeCount = video_table_size;
 

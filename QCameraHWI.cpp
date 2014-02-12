@@ -957,7 +957,7 @@ bool QCameraHardwareInterface::preview_parm_config (cam_ctrl_dimension_t* dim,
     dim->video_chroma_height  = mDimension.video_height;
     /* Reset the Main image and thumbnail formats here,
      * since they might have been changed when video size
-     * livesnapshot was taken. */
+     * livesnapshot was taken.*/
     if (mSnapshotFormat == 1)
       dim->main_img_format = CAMERA_YUV_422_NV61;
     else
@@ -2009,7 +2009,7 @@ void QCameraHardwareInterface::zoomEvent(cam_ctrl_status_t *status, app_notify_c
 
 void QCameraHardwareInterface::dumpFrameToFile(const void * data, uint32_t size, char* name, char* ext, int index)
 {
-    char buf[32];
+    char buf[64];
     int file_fd;
     if ( data != NULL) {
         char * str;
@@ -2201,7 +2201,7 @@ int QCameraHardwareInterface::allocate_ion_memory(QCameraHalHeap_t *p_camera_mem
   /* to make it page size aligned */
   p_camera_memory->alloc[cnt].len = (p_camera_memory->alloc[cnt].len + 4095) & (~4095);
   p_camera_memory->alloc[cnt].align = 4096;
-//  p_camera_memory->alloc[cnt].flags = (0x1 << ion_type | 0x1 << ION_IOMMU_HEAP_ID);
+//  p_camera_memory->alloc[cnt].flags = (0x1 << ion_type | 0x1 << ION_CP_MM_HEAP_ID);
   p_camera_memory->alloc[cnt].flags = ION_FLAG_CACHED;
   p_camera_memory->alloc[cnt].heap_mask = ion_type;
 
@@ -2259,9 +2259,9 @@ int QCameraHardwareInterface::allocate_ion_memory(QCameraStatHeap_t *p_camera_me
   /* to make it page size aligned */
   p_camera_memory->alloc[cnt].len = (p_camera_memory->alloc[cnt].len + 4095) & (~4095);
   p_camera_memory->alloc[cnt].align = 4096;
-//  p_camera_memory->alloc[cnt].flags = ION_FLAG_CACHED;
-//  p_camera_memory->alloc[cnt].heap_mask = ion_type;
-  p_camera_memory->alloc[cnt].flags = (0x1 << ion_type | 0x1 << ION_IOMMU_HEAP_ID);
+  p_camera_memory->alloc[cnt].flags = ION_FLAG_CACHED;
+  p_camera_memory->alloc[cnt].heap_mask = ion_type;
+//  p_camera_memory->alloc[cnt].flags = (0x1 << ion_type | 0x1 << ION_IOMMU_HEAP_ID);
 
   rc = ioctl(p_camera_memory->main_ion_fd[cnt], ION_IOC_ALLOC, &p_camera_memory->alloc[cnt]);
   if (rc < 0) {
@@ -2382,6 +2382,7 @@ int QCameraHardwareInterface::initHeapMem( QCameraHalHeap_t *heap,
 #ifdef USE_ION
 //      rc = allocate_ion_memory(heap, i, ION_CP_MM_HEAP_ID);
         rc = allocate_ion_memory(heap, i, (0x1 << ION_CAMERA_HEAP_ID));
+//	rc = allocate_ion_memory(heap, i, ION_CAMERA_HEAP_ID);
         if (rc < 0) {
             ALOGE("%sION allocation failed MAIN!\n", __func__);
             break;
