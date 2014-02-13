@@ -373,8 +373,8 @@ int32_t mm_camera_set_general_parm(mm_camera_obj_t * my_obj, mm_camera_parm_t *p
                   CAMERA_SET_PARM_PREVIEW_FORMAT, sizeof(uint32_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_DIS_ENABLE:
-      return mm_camera_send_native_ctrl_cmd(my_obj,
-                  CAMERA_SET_DIS_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
+      return 0;// mm_camera_send_native_ctrl_cmd(my_obj,
+                 // CAMERA_SET_DIS_ENABLE, sizeof(uint32_t), (void *)parm->p_value);
 
     case MM_CAMERA_PARM_FULL_LIVESHOT: {
       my_obj->full_liveshot = *((int *)(parm->p_value));
@@ -517,8 +517,9 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
     }
         break;
     case MM_CAMERA_PARM_MAX_HFR_MODE:
-        return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_MAX_HFR_MODE,
-                sizeof(camera_hfr_mode_t), (void *)parm->p_value);
+        ALOGE("CAMERA_PARM_MAX_HFR_MODE not supported");
+        return 0;//mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_MAX_HFR_MODE,
+                //sizeof(camera_hfr_mode_t), (void *)parm->p_value);
     case MM_CAMERA_PARM_FOCAL_LENGTH:
         return mm_camera_send_native_ctrl_cmd(my_obj, CAMERA_GET_PARM_FOCAL_LENGTH,
                      sizeof(focus_distances_info_t), (void *)parm->p_value);
@@ -603,9 +604,9 @@ static int mm_camera_evt_sub(mm_camera_obj_t * my_obj,
         if(my_obj->evt_type_mask == (uint32_t)(1 << evt_type)) {
             rc = ioctl(my_obj->ctrl_fd, VIDIOC_UNSUBSCRIBE_EVENT, &sub);
             CDBG("%s: unsubscribe event 0x%x, rc = %d", __func__, sub.type, rc);
-            sub.type = V4L2_EVENT_PRIVATE_START+MSM_CAM_APP_NOTIFY_ERROR_EVENT;
+/*            sub.type = V4L2_EVENT_PRIVATE_START+MSM_CAM_APP_NOTIFY_ERROR_EVENT;
             rc = ioctl(my_obj->ctrl_fd, VIDIOC_UNSUBSCRIBE_EVENT, &sub);
-            CDBG("%s: unsubscribe event 0x%x, rc = %d", __func__, sub.type, rc);
+            CDBG("%s: unsubscribe event 0x%x, rc = %d", __func__, sub.type, rc); */
         }
         my_obj->evt_type_mask &= ~(1 << evt_type);
         if(my_obj->evt_type_mask == 0) {
@@ -619,11 +620,11 @@ static int mm_camera_evt_sub(mm_camera_obj_t * my_obj,
             CDBG("%s: subscribe event 0x%x, rc = %d", __func__, sub.type, rc);
             if (rc < 0)
                 goto end;
-            sub.type = V4L2_EVENT_PRIVATE_START+MSM_CAM_APP_NOTIFY_ERROR_EVENT;
+/*            sub.type = V4L2_EVENT_PRIVATE_START+MSM_CAM_APP_NOTIFY_ERROR_EVENT;
             rc = ioctl(my_obj->ctrl_fd, VIDIOC_SUBSCRIBE_EVENT, &sub);
             CDBG("%s: subscribe event 0x%x, rc = %d", __func__, sub.type, rc);
             if (rc < 0)
-                goto end;
+                goto end;*/
         }
         my_obj->evt_type_mask |= (1 << evt_type);
         if(my_obj->evt_type_mask == (uint32_t)(1 << evt_type)) {

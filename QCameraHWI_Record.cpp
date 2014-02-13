@@ -401,6 +401,7 @@ status_t QCameraStream_record::initEncodeBuffers()
   planes[0] = dim.video_frame_offset.mp[0].len;
   planes[1] = dim.video_frame_offset.mp[1].len;
   frame_len = dim.video_frame_offset.frame_len;
+    ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
 
   buf_cnt = VIDEO_BUFFER_COUNT;
   if(mHalCamCtrl->isLowPowerCamcorder()) {

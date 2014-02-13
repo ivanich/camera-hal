@@ -3432,7 +3432,7 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
     }
 
     /* Get maximum video size supported by sensor*/
-/*    memset(&dim, 0, sizeof(mm_camera_dimension_t));
+    memset(&dim, 0, sizeof(mm_camera_dimension_t));
     ret = cam_config_get_parm(mCameraId,
                               MM_CAMERA_PARM_MAX_VIDEO_SIZE, &dim);
     if(ret != NO_ERROR) {
@@ -3447,7 +3447,7 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
 
     ALOGD("%s: Max Video Size Supported: %d X %d", __func__,
          dim.width, dim.height);
-
+/*
     for(i=0; i < video_table_size; i++) {
          We'll store those dimensions whose width AND height
            are less than or equal to maximum supported 
@@ -3462,12 +3462,14 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
         video_size_table++;
     }*/
 //    video_size_table = default_video_sizes;
-    free(mVideoSizes);
-    mVideoSizes = NULL;
+//    free(mVideoSizes);
+//    mVideoSizes = NULL;
+end:
+//if (ret == BAD_VALUE) {
     mVideoSizes = video_size_table;
     mVideoSizeCount = video_table_size;
+//   }
 
-end:
     ALOGE("%s: X", __func__);
     return ret;
 }
