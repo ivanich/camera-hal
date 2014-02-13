@@ -916,12 +916,10 @@ void QCameraStream_Snapshot::deInitBuffer(void)
       ((mHalCamCtrl->getHDRMode() == HDR_MODE) || (mHalCamCtrl->isWDenoiseEnabled()))) {
         /*register main and thumbnail buffers at back-end for frameproc*/
         for (int i = 0; i < mHalCamCtrl->mSnapshotMemory.buffer_count; i++) {
-          if (NO_ERROR != mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_MAIN, i, mCameraId,
-                                                        CAM_SOCK_MSG_TYPE_FD_UNMAPPING)) {
+          if (NO_ERROR != mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_MAIN, i)) {
             ALOGE("%s: sending unmapping data Msg Failed", __func__);
           }
-          if (NO_ERROR != mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_THUMBNAIL, i, mCameraId,
-                                                        CAM_SOCK_MSG_TYPE_FD_UNMAPPING)) {
+          if (NO_ERROR != mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_THUMBNAIL, i)) {
             ALOGE("%s: sending unmapping data Msg Failed", __func__);
           }
         }
@@ -1042,13 +1040,11 @@ status_t QCameraStream_Snapshot::initJPEGSnapshot(int num_of_snapshots)
       /*register main and thumbnail buffers at back-end for frameproc*/
         for (int i = 0; i < num_of_snapshots; i++) {
           if (NO_ERROR != mHalCamCtrl->sendMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_MAIN, i,
-          mSnapshotStreamBuf.frame[i].fd, mHalCamCtrl->mSnapshotMemory.size, mCameraId,
-                                                      CAM_SOCK_MSG_TYPE_FD_MAPPING)) {
+          mSnapshotStreamBuf.frame[i].fd, mHalCamCtrl->mSnapshotMemory.size)) {
             ALOGE("%s: sending mapping data Msg Failed", __func__);
           }
           if (NO_ERROR != mHalCamCtrl->sendMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_THUMBNAIL, i,
-          mPostviewStreamBuf.frame[i].fd, mHalCamCtrl->mThumbnailMemory.size, mCameraId,
-                                                      CAM_SOCK_MSG_TYPE_FD_MAPPING)) {
+          mPostviewStreamBuf.frame[i].fd, mHalCamCtrl->mThumbnailMemory.size)) {
             ALOGE("%s: sending mapping data Msg Failed", __func__);
           }
         }
@@ -1689,20 +1685,20 @@ encodeDisplayAndSave(mm_camera_ch_data_buf_t* recvd_frame,
     cache_inv_data.handle = recvd_frame->snapshot.main.frame->fd_data.handle;
     cache_inv_data.length = recvd_frame->snapshot.main.frame->ion_alloc.len;
     if(ion_fd > 0) {
-      if(mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_INV_CACHES) < 0)
+//      if(mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_INV_CACHES) < 0)
           ALOGE("%s: Cache Invalidate failed\n", __func__);
-      else {
+//      else {
           ALOGD("%s: Successful cache invalidate\n", __func__);
 	  if(!isFullSizeLiveshot()) {
             cache_inv_data.vaddr = (void*)recvd_frame->snapshot.thumbnail.frame->buffer;
             cache_inv_data.fd = recvd_frame->snapshot.thumbnail.frame->fd;
             cache_inv_data.handle = recvd_frame->snapshot.thumbnail.frame->fd_data.handle;
             cache_inv_data.length = recvd_frame->snapshot.thumbnail.frame->ion_alloc.len;
-            if(mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_INV_CACHES) < 0)
+ //           if(mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_INV_CACHES) < 0)
               ALOGE("%s: Cache Invalidate failed\n", __func__);
-            else
+ //           else
               ALOGD("%s: Successful cache invalidate\n", __func__);
-          }
+ //         }
       }
       close(ion_fd);
     }
@@ -2398,10 +2394,8 @@ void QCameraStream_Snapshot::notifyWDenoiseEvent(cam_ctrl_status_t status, void 
         ALOGE("%s: cookie is returned NULL", __func__);
     } else {
         // first unmapping the fds
-        mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_MAIN, frame->snapshot.main.idx, mCameraId,
-                                      CAM_SOCK_MSG_TYPE_FD_UNMAPPING);
-        mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_THUMBNAIL, frame->snapshot.thumbnail.idx, mCameraId,
-                                      CAM_SOCK_MSG_TYPE_FD_UNMAPPING);
+        mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_MAIN, frame->snapshot.main.idx);
+        mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_THUMBNAIL, frame->snapshot.thumbnail.idx);
 
         // then do JPEG encoding
         rc = encodeDisplayAndSave(frame, 0);
@@ -2490,7 +2484,7 @@ status_t QCameraStream_Snapshot::doWaveletDenoise(mm_camera_ch_data_buf_t* frame
     cam_ctrl_dimension_t dim;
 
     ALOGD("%s: E", __func__);
-
+#if 0
     // get dim on the fly
     memset(&dim, 0, sizeof(cam_ctrl_dimension_t));
     ret = cam_config_get_parm(mCameraId, MM_CAMERA_PARM_DIMENSION, &dim);
@@ -2503,8 +2497,7 @@ status_t QCameraStream_Snapshot::doWaveletDenoise(mm_camera_ch_data_buf_t* frame
     if (NO_ERROR != mHalCamCtrl->sendMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_MAIN,
                                                 frame->snapshot.main.idx,
                                                 frame->snapshot.main.frame->fd,
-                                                dim.picture_frame_offset.frame_len, mCameraId,
-                                                CAM_SOCK_MSG_TYPE_FD_MAPPING)) {
+                                                dim.picture_frame_offset.frame_len)) {
         ALOGE("%s: sending main frame mapping buf msg Failed", __func__);
         ret = FAILED_TRANSACTION;
         goto end;
@@ -2529,6 +2522,7 @@ status_t QCameraStream_Snapshot::doWaveletDenoise(mm_camera_ch_data_buf_t* frame
     }
 
 end:
+#endif
     ALOGD("%s: X", __func__);
     return ret;
 }
