@@ -3532,6 +3532,34 @@ status_t QCameraHardwareInterface::setHistogram(int histogram_en)
                    ALOGE("Received following info for stats mapped data:%p,handle:%p, size:%d,release:%p",
                    mStatsMapped[cnt]->data ,mStatsMapped[cnt]->handle, mStatsMapped[cnt]->size, mStatsMapped[cnt]->release);
                 }
+                mHistServer.size = sizeof(camera_preview_histogram_info);
+#ifdef USE_ION
+                if(allocate_ion_memory(&mHistServer, cnt, (0x1 << ION_CP_MM_HEAP_ID)) < 0) {
+                  ALOGE("%s ION alloc failed\n", __func__);
+                  return -1;
+                }
+#else
+		        mHistServer.fd[cnt] = open("/dev/pmem_adsp", O_RDWR|O_SYNC);
+		        if(mHistServer.fd[cnt] <= 0) {
+			      ALOGE("%s: no pmem for frame %d", __func__, cnt);
+			      return -1;
+		        }
+#endif
+                mHistServer.camera_memory[cnt]=mGetMemory(mHistServer.fd[cnt],mHistServer.size, 1, mCallbackCookie);
+                if(mHistServer.camera_memory[cnt] == NULL) {
+                    ALOGE("Failed to get camera memory for server side histogram index: %d", cnt);
+                    return(-1);
+                } else {
+                   ALOGE("Received following info for server side histogram data:%p,handle:%p, size:%d,release:%p",
+                   mHistServer.camera_memory[cnt]->data ,mHistServer.camera_memory[cnt]->handle,
+                        mHistServer.camera_memory[cnt]->size, mHistServer.camera_memory[cnt]->release);
+                }
+                /*Register buffer at back-end*/
+                if (NO_ERROR != sendMappingBuf(0, cnt, mHistServer.fd[cnt],
+                                                   mHistServer.size, mCameraId,
+                                               CAM_SOCK_MSG_TYPE_HIST_MAPPING)) {
+                    ALOGE("%s could not send buffer to back-end\n", __func__);
+                }
         }
     }
     ALOGV("Setting histogram = %d", histogram_en);
@@ -3543,6 +3571,17 @@ status_t QCameraHardwareInterface::setHistogram(int histogram_en)
             if(mStatsMapped[i] != NULL) {
                 mStatsMapped[i]->release(mStatsMapped[i]);
             }
+            /*Unregister buffer at back-end */
+            if (NO_ERROR != sendUnMappingBuf(0, i, mCameraId, CAM_SOCK_MSG_TYPE_HIST_UNMAPPING)) {
+              ALOGE("%s could not unregister buffer from back-end\n", __func__);
+            }
+            if(mHistServer.camera_memory[i] != NULL) {
+                mHistServer.camera_memory[i]->release(mHistServer.camera_memory[i]);
+            }
+            close(mHistServer.fd[i]);
+#ifdef USE_ION
+            deallocate_ion_memory(&mHistServer, i);
+#endif
         }
     }
     return NO_ERROR;

@@ -257,7 +257,8 @@ status_t QCameraStream_preview::putBufferToSurface() {
     mHalCamCtrl->mPreviewMemoryLock.lock();
 	for (int cnt = 0; cnt < mHalCamCtrl->mPreviewMemory.buffer_count; cnt++) {
         if (cnt < mHalCamCtrl->mPreviewMemory.buffer_count) {
-            if (NO_ERROR != mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_PREVIEW, cnt)) {
+            if (NO_ERROR != mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_PREVIEW, cnt, mCameraId,
+                                                          CAM_SOCK_MSG_TYPE_FD_UNMAPPING)) {
                 ALOGE("%s: sending data Msg Failed", __func__);
             }
         }
@@ -363,7 +364,8 @@ status_t   QCameraStream_preview::freeBufferNoDisplay()
   mHalCamCtrl->mPreviewMemoryLock.lock();
   for (int cnt = 0; cnt < mHalCamCtrl->mNoDispPreviewMemory.buffer_count; cnt++) {
       if (cnt < mHalCamCtrl->mNoDispPreviewMemory.buffer_count) {
-          if (NO_ERROR != mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_PREVIEW, cnt)) {
+          if (NO_ERROR != mHalCamCtrl->sendUnMappingBuf(MSM_V4L2_EXT_CAPTURE_MODE_PREVIEW, cnt,
+                                                    mCameraId, CAM_SOCK_MSG_TYPE_FD_UNMAPPING)) {
               ALOGE("%s: sending data Msg Failed", __func__);
           }
       }
@@ -499,8 +501,11 @@ ALOGE("%s: planes=%d %d len=%d",__func__,planes[0],planes[1],this->mDisplayStrea
                         MSM_V4L2_EXT_CAPTURE_MODE_PREVIEW,
                         i,
                         mDisplayStreamBuf.frame[i].fd,
-                        mHalCamCtrl->mPreviewMemory.private_buffer_handle[i]->size); {
+                        mHalCamCtrl->mPreviewMemory.private_buffer_handle[i]->size,
+                        mCameraId, CAM_SOCK_MSG_TYPE_FD_MAPPING);
+    if (NO_ERROR != ret) {
       ALOGE("%s: sending mapping data Msg Failed", __func__);
+      goto error;
     }
 
     mDisplayBuf.preview.buf.mp[i].frame = mDisplayStreamBuf.frame[i];
@@ -674,8 +679,11 @@ status_t QCameraStream_preview::initPreviewOnlyBuffers()
                         MSM_V4L2_EXT_CAPTURE_MODE_PREVIEW,
                         i,
                         mDisplayStreamBuf.frame[i].fd,
-                        mHalCamCtrl->mNoDispPreviewMemory.size); {
+                        mHalCamCtrl->mNoDispPreviewMemory.size,
+                        mCameraId, CAM_SOCK_MSG_TYPE_FD_MAPPING);
+    if (NO_ERROR != ret) {
       ALOGE("%s: sending mapping data Msg Failed", __func__);
+      goto error;
     }
 
     mDisplayBuf.preview.buf.mp[i].frame = mDisplayStreamBuf.frame[i];
@@ -814,9 +822,9 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
   cache_inv_data.handle = frame->def.frame->fd_data.handle;
   cache_inv_data.length = frame->def.frame->ion_alloc.len;
 
-//  if (mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_CACHES) < 0)
-//    ALOGE("%s: Cache clean for Preview buffer %p fd = %d failed", __func__,
-//      cache_inv_data.vaddr, cache_inv_data.fd);
+  if (mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_CACHES) < 0)
+    ALOGE("%s: Cache clean for Preview buffer %p fd = %d failed", __func__,
+      cache_inv_data.vaddr, cache_inv_data.fd);
 #endif
 
   err = this->mPreviewWindow->enqueue_buffer(this->mPreviewWindow,

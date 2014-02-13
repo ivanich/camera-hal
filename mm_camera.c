@@ -962,7 +962,6 @@ int32_t mm_camera_close(mm_camera_obj_t *my_obj)
     }
     my_obj->op_mode = MM_CAMERA_OP_MODE_NOTUSED;
     if(my_obj->ctrl_fd > 0) {
-        mm_camera_histo_mmap(my_obj, NULL);
         rc = close(my_obj->ctrl_fd);
         if(rc < 0) {
             /* this is a dead end. */
