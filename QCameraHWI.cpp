@@ -2156,7 +2156,7 @@ status_t QCameraHardwareInterface::sendMappingBuf(int ext_mode, int idx, int fd,
                                                   uint32_t size, int cameraid,
                                                   mm_camera_socket_msg_type msg_type)
 {
-    cam_sock_packet_t packet;
+/*    cam_sock_packet_t packet;
     memset(&packet, 0, sizeof(cam_sock_packet_t));
     packet.msg_type = msg_type;
     packet.payload.frame_fd_map.ext_mode = ext_mode;
@@ -2167,14 +2167,14 @@ status_t QCameraHardwareInterface::sendMappingBuf(int ext_mode, int idx, int fd,
     if ( cam_ops_sendmsg(cameraid, &packet, sizeof(cam_sock_packet_t), packet.payload.frame_fd_map.fd) <= 0 ) {
         ALOGE("%s: sending frame mapping buf msg Failed", __func__);
         return FAILED_TRANSACTION;
-    }
+    }*/
     return NO_ERROR;
 }
 
 status_t QCameraHardwareInterface::sendUnMappingBuf(int ext_mode, int idx, int cameraid,
                                                     mm_camera_socket_msg_type msg_type)
 {
-    cam_sock_packet_t packet;
+/*    cam_sock_packet_t packet;
     memset(&packet, 0, sizeof(cam_sock_packet_t));
     packet.msg_type = msg_type;
     packet.payload.frame_fd_unmap.ext_mode = ext_mode;
@@ -2182,7 +2182,7 @@ status_t QCameraHardwareInterface::sendUnMappingBuf(int ext_mode, int idx, int c
     if ( cam_ops_sendmsg(cameraid, &packet, sizeof(cam_sock_packet_t), 0) <= 0 ) {
         ALOGE("%s: sending frame unmapping buf msg Failed", __func__);
         return FAILED_TRANSACTION;
-    }
+    }*/
     return NO_ERROR;
 }
 
