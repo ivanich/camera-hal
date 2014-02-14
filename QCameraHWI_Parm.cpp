@@ -3163,17 +3163,48 @@ status_t QCameraHardwareInterface::setRecordingHint(const QCameraParameters& par
 }
 
 status_t QCameraHardwareInterface::setDISMode() {
-  /* Enable DIS only if
-   * - Camcorder mode AND
-   * - DIS property is set AND
-   * - Not in Low power mode. */
-  uint32_t value = mRecordingHint && mDisEnabled
-                   && !isLowPowerCamcorder();
+//  if(isLowPowerCamcorder())
+//      mDisEnabled = 0;.
+
+  uint32_t value = mRecordingHint && mDisEnabled;
+
+  /* TODO Remove this workaround once the C2D limitation
+   * (32 alignment on width) is fixed. */
+  /* Start workaround */
+  /*
+  * in live effect case Dimension will be reversed.
+  */
+  if (mDimension.display_width == QCIF_WIDTH || mDimension.display_height == QCIF_WIDTH ||
+      mDimension.display_width == D1_WIDTH || mDimension.display_height == D1_WIDTH) {
+      value = 0;
+  }
+  /* End workaround */
+
 
   ALOGI("%s DIS is %s value = %d", __func__,
           value ? "Enabled" : "Disabled", value);
-  native_set_parms(MM_CAMERA_PARM_DIS_ENABLE, sizeof(value),
-                                               (void *)&value);
+//  native_set_parms(MM_CAMERA_PARM_DIS_ENABLE, sizeof(value),
+//                                               (void *)&value);
+
+    video_dis_param_ctrl_t disCtrl;
+    bool ret = true;
+    ALOGV("mDisEnabled = %d", value);
+
+    int video_frame_cbcroffset;
+    video_frame_cbcroffset = PAD_TO_WORD(mDimension.video_width * mDimension.video_height);
+
+    disCtrl.dis_enable = value;
+    const char *str = mParameters.get(CameraParameters::KEY_VIDEO_HIGH_FRAME_RATE);
+    if((str != NULL) && (strcmp(str, CameraParameters::VIDEO_HFR_OFF))) {
+        ALOGI("%s: HFR is ON, setting DIS as OFF", __FUNCTION__);
+        disCtrl.dis_enable = 0;
+    }
+    disCtrl.video_rec_width = mDimension.video_width;
+    disCtrl.video_rec_height = mDimension.video_height;
+    disCtrl.output_cbcr_offset = video_frame_cbcroffset;
+
+    ret = native_set_parms( MM_CAMERA_PARM_VIDEO_DIS,
+                       sizeof(disCtrl), &disCtrl);
   return NO_ERROR;
 }
 
@@ -3432,7 +3463,7 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
     }
 
     /* Get maximum video size supported by sensor*/
-    memset(&dim, 0, sizeof(mm_camera_dimension_t));
+/*    memset(&dim, 0, sizeof(mm_camera_dimension_t));
     ret = cam_config_get_parm(mCameraId,
                               MM_CAMERA_PARM_MAX_VIDEO_SIZE, &dim);
     if(ret != NO_ERROR) {
@@ -3447,7 +3478,7 @@ status_t QCameraHardwareInterface::setVideoSizeTable(void)
 
     ALOGD("%s: Max Video Size Supported: %d X %d", __func__,
          dim.width, dim.height);
-/*
+
     for(i=0; i < video_table_size; i++) {
          We'll store those dimensions whose width AND height
            are less than or equal to maximum supported 
@@ -3534,7 +3565,7 @@ status_t QCameraHardwareInterface::setHistogram(int histogram_en)
                 }
                 mHistServer.size = sizeof(camera_preview_histogram_info);
 #ifdef USE_ION
-                if(allocate_ion_memory(&mHistServer, cnt, (0x1 << ION_CP_MM_HEAP_ID)) < 0) {
+                if(allocate_ion_memory(&mHistServer, cnt, (0x1 << ION_CAMERA_HEAP_ID)) < 0) {
                   ALOGE("%s ION alloc failed\n", __func__);
                   return -1;
                 }
