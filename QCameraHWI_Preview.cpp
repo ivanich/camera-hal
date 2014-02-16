@@ -77,10 +77,6 @@ status_t QCameraStream_preview::setPreviewWindow(preview_stream_ops_t* window)
            ALOGV("%s : Preview window changed, previous buffer unprepared",__func__);
            /*free camera_memory handles and return buffer back to surface*/
            putBufferToSurface();
-           if (mDisplayBuf.preview.buf.mp != NULL) {
-               delete[] mDisplayBuf.preview.buf.mp;
-               mDisplayBuf.preview.buf.mp = NULL;
-           }
        }
     }
     mPreviewWindow = window;
@@ -120,7 +116,7 @@ status_t QCameraStream_preview::getBufferFromSurface() {
     cam_ctrl_dimension_t dim;
 
   //mDisplayLock.lock();
-    cam_config_get_parm(mCameraId, MM_CAMERA_PARM_DIMENSION,&dim);
+    ret = cam_config_get_parm(mCameraId, MM_CAMERA_PARM_DIMENSION,&dim);
 
 	format = mHalCamCtrl->getPreviewFormatInfo().Hal_format;
 	if(ret != NO_ERROR) {
@@ -167,7 +163,6 @@ status_t QCameraStream_preview::getBufferFromSurface() {
     }
     err = mPreviewWindow->set_usage(mPreviewWindow,
         GRALLOC_USAGE_PRIVATE_CAMERA_HEAP |
-        GRALLOC_USAGE_PRIVATE_IOMMU_HEAP |
         GRALLOC_USAGE_PRIVATE_UNCACHED);
 	if(err != 0) {
         /* set_usage error out */
@@ -250,7 +245,7 @@ end:
   //mDisplayLock.unlock();
   mHalCamCtrl->mPreviewMemoryLock.unlock();
 
-    return NO_ERROR;
+    return ret;
 }
 
 status_t QCameraStream_preview::putBufferToSurface() {
@@ -293,11 +288,11 @@ status_t QCameraStream_preview::putBufferToSurface() {
 	}
 	memset(&mHalCamCtrl->mPreviewMemory, 0, sizeof(mHalCamCtrl->mPreviewMemory));
 
-/*    if (mDisplayBuf.preview.buf.mp != NULL) {
+    if (mDisplayBuf.preview.buf.mp != NULL) {
         delete[] mDisplayBuf.preview.buf.mp;
         mDisplayBuf.preview.buf.mp = NULL;
     }
-*/
+
 	mHalCamCtrl->mPreviewMemoryLock.unlock();
     ALOGI(" %s : X ",__FUNCTION__);
     return NO_ERROR;
@@ -461,9 +456,8 @@ status_t QCameraStream_preview::initDisplayBuffers()
   }
 
   /* set 4 buffers for display */
-//  mHalCamCtrl->mPreviewMemoryLock.lock();
-  memset(&mDisplayStreamBuf, 0, sizeof(mDisplayStreamBuf));
   mHalCamCtrl->mPreviewMemoryLock.lock();
+  memset(&mDisplayStreamBuf, 0, sizeof(mDisplayStreamBuf));
   this->mDisplayStreamBuf.num = mHalCamCtrl->mPreviewMemory.buffer_count;
   this->myMode=myMode; /*Need to assign this in constructor after translating from mask*/
   num_planes = dim.display_frame_offset.num_planes;
@@ -1085,10 +1079,6 @@ QCameraStream_preview::~QCameraStream_preview() {
        ALOGV("%s : previous buffer unprepared",__func__);
        /*free camera_memory handles and return buffer back to surface*/
        putBufferToSurface();
-       if (mDisplayBuf.preview.buf.mp != NULL) {
-           delete[] mDisplayBuf.preview.buf.mp;
-           mDisplayBuf.preview.buf.mp = NULL;
-       }
     }
 	mInit = false;
 	mActive = false;
@@ -1351,7 +1341,7 @@ end:
     (void)cam_evt_register_buf_notify(mCameraId, MM_CAMERA_CH_PREVIEW,
                                       NULL,
                                       (mm_camera_register_buf_cb_type_t)NULL,
-                                      0,
+                                      NULL,
                                       NULL);
     mInit = false;
     ALOGE("%s: END", __func__);
