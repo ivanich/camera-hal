@@ -376,8 +376,8 @@ configSnapshotDimension(cam_ctrl_dimension_t* dim)
     mHalCamCtrl->getPictureSize(&mPictureWidth, &mPictureHeight);
     ALOGD("%s: Picture size received: %d x %d", __func__,
          mPictureWidth, mPictureHeight);
-    mPostviewWidth = mHalCamCtrl->mParameters.getInt(QCameraParameters::KEY_JPEG_THUMBNAIL_WIDTH);
-    mPostviewHeight =  mHalCamCtrl->mParameters.getInt(QCameraParameters::KEY_JPEG_THUMBNAIL_HEIGHT);
+    mPostviewWidth = mHalCamCtrl->mParameters.getInt(CameraParameters::KEY_JPEG_THUMBNAIL_WIDTH);
+    mPostviewHeight =  mHalCamCtrl->mParameters.getInt(CameraParameters::KEY_JPEG_THUMBNAIL_HEIGHT);
     /*If application requested thumbnail size to be (0,0) 
        then configure second outout to a default size.
        Jpeg encoder will drop thumbnail as reflected in encodeParams.
