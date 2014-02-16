@@ -19,188 +19,188 @@
 #include <utils/Log.h>
 #include <string.h>
 #include <stdlib.h>
-#include "QCameraParameters.h"
+#include <camera/CameraParameters.h>
 
 namespace android {
 // Parameter keys to communicate between camera application and driver.
-const char QCameraParameters::KEY_SUPPORTED_HFR_SIZES[] = "hfr-size-values";
-const char QCameraParameters::KEY_PREVIEW_FRAME_RATE_MODE[] = "preview-frame-rate-mode";
-const char QCameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATE_MODES[] = "preview-frame-rate-modes";
-const char QCameraParameters::KEY_PREVIEW_FRAME_RATE_AUTO_MODE[] = "frame-rate-auto";
-const char QCameraParameters::KEY_PREVIEW_FRAME_RATE_FIXED_MODE[] = "frame-rate-fixed";
-const char QCameraParameters::KEY_TOUCH_AF_AEC[] = "touch-af-aec";
-const char QCameraParameters::KEY_SUPPORTED_TOUCH_AF_AEC[] = "touch-af-aec-values";
-const char QCameraParameters::KEY_TOUCH_INDEX_AEC[] = "touch-index-aec";
-const char QCameraParameters::KEY_TOUCH_INDEX_AF[] = "touch-index-af";
-const char QCameraParameters::KEY_SCENE_DETECT[] = "scene-detect";
-const char QCameraParameters::KEY_SUPPORTED_SCENE_DETECT[] = "scene-detect-values";
-const char QCameraParameters::KEY_ISO_MODE[] = "iso";
-const char QCameraParameters::KEY_SUPPORTED_ISO_MODES[] = "iso-values";
-const char QCameraParameters::KEY_LENSSHADE[] = "lensshade";
-const char QCameraParameters::KEY_SUPPORTED_LENSSHADE_MODES[] = "lensshade-values";
-const char QCameraParameters::KEY_AUTO_EXPOSURE[] = "auto-exposure";
-const char QCameraParameters::KEY_SUPPORTED_AUTO_EXPOSURE[] = "auto-exposure-values";
-const char QCameraParameters::KEY_DENOISE[] = "denoise";
-const char QCameraParameters::KEY_SUPPORTED_DENOISE[] = "denoise-values";
-const char QCameraParameters::KEY_SELECTABLE_ZONE_AF[] = "selectable-zone-af";
-const char QCameraParameters::KEY_SUPPORTED_SELECTABLE_ZONE_AF[] = "selectable-zone-af-values";
-const char QCameraParameters::KEY_FACE_DETECTION[] = "face-detection";
-const char QCameraParameters::KEY_SUPPORTED_FACE_DETECTION[] = "face-detection-values";
-const char QCameraParameters::KEY_MEMORY_COLOR_ENHANCEMENT[] = "mce";
-const char QCameraParameters::KEY_SUPPORTED_MEM_COLOR_ENHANCE_MODES[] = "mce-values";
-const char QCameraParameters::KEY_VIDEO_HIGH_FRAME_RATE[] = "video-hfr";
-const char QCameraParameters::KEY_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES[] = "video-hfr-values";
-const char QCameraParameters::KEY_REDEYE_REDUCTION[] = "redeye-reduction";
-const char QCameraParameters::KEY_SUPPORTED_REDEYE_REDUCTION[] = "redeye-reduction-values";
-const char QCameraParameters::KEY_HIGH_DYNAMIC_RANGE_IMAGING[] = "hdr";
-const char QCameraParameters::KEY_SUPPORTED_HDR_IMAGING_MODES[] = "hdr-values";
-const char QCameraParameters::KEY_POWER_MODE_SUPPORTED[] = "power-mode-supported";
-const char QCameraParameters::KEY_ZSL[] = "zsl";
-const char QCameraParameters::KEY_SUPPORTED_ZSL_MODES[] = "zsl-values";
-const char QCameraParameters::KEY_CAMERA_MODE[] = "camera-mode";
-const char QCameraParameters::KEY_AE_BRACKET_HDR[] = "ae-bracket-hdr";
-const char QCameraParameters::KEY_POWER_MODE[] = "power-mode";
+const char CameraParameters::KEY_SUPPORTED_HFR_SIZES[] = "hfr-size-values";
+const char CameraParameters::KEY_PREVIEW_FRAME_RATE_MODE[] = "preview-frame-rate-mode";
+const char CameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATE_MODES[] = "preview-frame-rate-modes";
+const char CameraParameters::KEY_PREVIEW_FRAME_RATE_AUTO_MODE[] = "frame-rate-auto";
+const char CameraParameters::KEY_PREVIEW_FRAME_RATE_FIXED_MODE[] = "frame-rate-fixed";
+const char CameraParameters::KEY_TOUCH_AF_AEC[] = "touch-af-aec";
+const char CameraParameters::KEY_SUPPORTED_TOUCH_AF_AEC[] = "touch-af-aec-values";
+const char CameraParameters::KEY_TOUCH_INDEX_AEC[] = "touch-index-aec";
+const char CameraParameters::KEY_TOUCH_INDEX_AF[] = "touch-index-af";
+const char CameraParameters::KEY_SCENE_DETECT[] = "scene-detect";
+const char CameraParameters::KEY_SUPPORTED_SCENE_DETECT[] = "scene-detect-values";
+const char CameraParameters::KEY_ISO_MODE[] = "iso";
+const char CameraParameters::KEY_SUPPORTED_ISO_MODES[] = "iso-values";
+const char CameraParameters::KEY_LENSSHADE[] = "lensshade";
+const char CameraParameters::KEY_SUPPORTED_LENSSHADE_MODES[] = "lensshade-values";
+const char CameraParameters::KEY_AUTO_EXPOSURE[] = "auto-exposure";
+const char CameraParameters::KEY_SUPPORTED_AUTO_EXPOSURE[] = "auto-exposure-values";
+const char CameraParameters::KEY_DENOISE[] = "denoise";
+const char CameraParameters::KEY_SUPPORTED_DENOISE[] = "denoise-values";
+const char CameraParameters::KEY_SELECTABLE_ZONE_AF[] = "selectable-zone-af";
+const char CameraParameters::KEY_SUPPORTED_SELECTABLE_ZONE_AF[] = "selectable-zone-af-values";
+const char CameraParameters::KEY_FACE_DETECTION[] = "face-detection";
+const char CameraParameters::KEY_SUPPORTED_FACE_DETECTION[] = "face-detection-values";
+const char CameraParameters::KEY_MEMORY_COLOR_ENHANCEMENT[] = "mce";
+const char CameraParameters::KEY_SUPPORTED_MEM_COLOR_ENHANCE_MODES[] = "mce-values";
+const char CameraParameters::KEY_VIDEO_HIGH_FRAME_RATE[] = "video-hfr";
+const char CameraParameters::KEY_SUPPORTED_VIDEO_HIGH_FRAME_RATE_MODES[] = "video-hfr-values";
+const char CameraParameters::KEY_REDEYE_REDUCTION[] = "redeye-reduction";
+const char CameraParameters::KEY_SUPPORTED_REDEYE_REDUCTION[] = "redeye-reduction-values";
+const char CameraParameters::KEY_HIGH_DYNAMIC_RANGE_IMAGING[] = "hdr";
+const char CameraParameters::KEY_SUPPORTED_HDR_IMAGING_MODES[] = "hdr-values";
+const char CameraParameters::KEY_POWER_MODE_SUPPORTED[] = "power-mode-supported";
+const char CameraParameters::KEY_ZSL[] = "zsl";
+const char CameraParameters::KEY_SUPPORTED_ZSL_MODES[] = "zsl-values";
+const char CameraParameters::KEY_CAMERA_MODE[] = "camera-mode";
+const char CameraParameters::KEY_AE_BRACKET_HDR[] = "ae-bracket-hdr";
+const char CameraParameters::KEY_POWER_MODE[] = "power-mode";
 /*only effective when KEY_AE_BRACKET_HDR set to ae_bracketing*/
-//const char QCameraParameters::KEY_AE_BRACKET_SETTING_KEY[] = "ae-bracket-setting";
+//const char CameraParameters::KEY_AE_BRACKET_SETTING_KEY[] = "ae-bracket-setting";
 
 // Values for effect settings.
-const char QCameraParameters::EFFECT_EMBOSS[] = "emboss";
-const char QCameraParameters::EFFECT_SKETCH[] = "sketch";
-const char QCameraParameters::EFFECT_NEON[] = "neon";
+const char CameraParameters::EFFECT_EMBOSS[] = "emboss";
+const char CameraParameters::EFFECT_SKETCH[] = "sketch";
+const char CameraParameters::EFFECT_NEON[] = "neon";
 
 // Values for auto exposure settings.
-const char QCameraParameters::TOUCH_AF_AEC_OFF[] = "touch-off";
-const char QCameraParameters::TOUCH_AF_AEC_ON[] = "touch-on";
+const char CameraParameters::TOUCH_AF_AEC_OFF[] = "touch-off";
+const char CameraParameters::TOUCH_AF_AEC_ON[] = "touch-on";
 
 // Values for scene mode settings.
-const char QCameraParameters::SCENE_MODE_ASD[] = "asd";   // corresponds to CAMERA_BESTSHOT_AUTO in HAL
-const char QCameraParameters::SCENE_MODE_BACKLIGHT[] = "backlight";
-const char QCameraParameters::SCENE_MODE_FLOWERS[] = "flowers";
-const char QCameraParameters::SCENE_MODE_AR[] = "AR";
+const char CameraParameters::SCENE_MODE_ASD[] = "asd";   // corresponds to CAMERA_BESTSHOT_AUTO in HAL
+const char CameraParameters::SCENE_MODE_BACKLIGHT[] = "backlight";
+const char CameraParameters::SCENE_MODE_FLOWERS[] = "flowers";
+const char CameraParameters::SCENE_MODE_AR[] = "AR";
 
 // Values for auto scene detection settings.
-const char QCameraParameters::SCENE_DETECT_OFF[] = "off";
-const char QCameraParameters::SCENE_DETECT_ON[] = "on";
+const char CameraParameters::SCENE_DETECT_OFF[] = "off";
+const char CameraParameters::SCENE_DETECT_ON[] = "on";
 
 // Formats for setPreviewFormat and setPictureFormat.
-const char QCameraParameters::PIXEL_FORMAT_YUV420SP_ADRENO[] = "yuv420sp-adreno";
-const char QCameraParameters::PIXEL_FORMAT_RAW[] = "raw";
-const char QCameraParameters::PIXEL_FORMAT_YV12[] = "yuv420p";
-const char QCameraParameters::PIXEL_FORMAT_NV12[] = "nv12";
+const char CameraParameters::PIXEL_FORMAT_YUV420SP_ADRENO[] = "yuv420sp-adreno";
+const char CameraParameters::PIXEL_FORMAT_RAW[] = "raw";
+const char CameraParameters::PIXEL_FORMAT_YV12[] = "yuv420p";
+const char CameraParameters::PIXEL_FORMAT_NV12[] = "nv12";
 
 // Values for focus mode settings.
-const char QCameraParameters::FOCUS_MODE_NORMAL[] = "normal";
-const char QCameraParameters::KEY_SKIN_TONE_ENHANCEMENT[] = "skinToneEnhancement";
-const char QCameraParameters::KEY_SUPPORTED_SKIN_TONE_ENHANCEMENT_MODES[] = "skinToneEnhancement-values";
+const char CameraParameters::FOCUS_MODE_NORMAL[] = "normal";
+const char CameraParameters::KEY_SKIN_TONE_ENHANCEMENT[] = "skinToneEnhancement";
+const char CameraParameters::KEY_SUPPORTED_SKIN_TONE_ENHANCEMENT_MODES[] = "skinToneEnhancement-values";
 
 // Values for ISO Settings
-const char QCameraParameters::ISO_AUTO[] = "auto";
-const char QCameraParameters::ISO_HJR[] = "ISO_HJR";
-const char QCameraParameters::ISO_100[] = "ISO100";
-const char QCameraParameters::ISO_200[] = "ISO200";
-const char QCameraParameters::ISO_400[] = "ISO400";
-const char QCameraParameters::ISO_800[] = "ISO800";
-const char QCameraParameters::ISO_1600[] = "ISO1600";
+const char CameraParameters::ISO_AUTO[] = "auto";
+const char CameraParameters::ISO_HJR[] = "ISO_HJR";
+const char CameraParameters::ISO_100[] = "ISO100";
+const char CameraParameters::ISO_200[] = "ISO200";
+const char CameraParameters::ISO_400[] = "ISO400";
+const char CameraParameters::ISO_800[] = "ISO800";
+const char CameraParameters::ISO_1600[] = "ISO1600";
 
  //Values for Lens Shading
-const char QCameraParameters::LENSSHADE_ENABLE[] = "enable";
-const char QCameraParameters::LENSSHADE_DISABLE[] = "disable";
+const char CameraParameters::LENSSHADE_ENABLE[] = "enable";
+const char CameraParameters::LENSSHADE_DISABLE[] = "disable";
 
 // Values for auto exposure settings.
-const char QCameraParameters::AUTO_EXPOSURE_FRAME_AVG[] = "frame-average";
-const char QCameraParameters::AUTO_EXPOSURE_CENTER_WEIGHTED[] = "center-weighted";
-const char QCameraParameters::AUTO_EXPOSURE_SPOT_METERING[] = "spot-metering";
+const char CameraParameters::AUTO_EXPOSURE_FRAME_AVG[] = "frame-average";
+const char CameraParameters::AUTO_EXPOSURE_CENTER_WEIGHTED[] = "center-weighted";
+const char CameraParameters::AUTO_EXPOSURE_SPOT_METERING[] = "spot-metering";
 
-const char QCameraParameters::KEY_GPS_LATITUDE_REF[] = "gps-latitude-ref";
-const char QCameraParameters::KEY_GPS_LONGITUDE_REF[] = "gps-longitude-ref";
-const char QCameraParameters::KEY_GPS_ALTITUDE_REF[] = "gps-altitude-ref";
-const char QCameraParameters::KEY_GPS_STATUS[] = "gps-status";
-const char QCameraParameters::KEY_EXIF_DATETIME[] = "exif-datetime";
+const char CameraParameters::KEY_GPS_LATITUDE_REF[] = "gps-latitude-ref";
+const char CameraParameters::KEY_GPS_LONGITUDE_REF[] = "gps-longitude-ref";
+const char CameraParameters::KEY_GPS_ALTITUDE_REF[] = "gps-altitude-ref";
+const char CameraParameters::KEY_GPS_STATUS[] = "gps-status";
+const char CameraParameters::KEY_EXIF_DATETIME[] = "exif-datetime";
 
-const char QCameraParameters::KEY_HISTOGRAM[] = "histogram";
-const char QCameraParameters::KEY_SUPPORTED_HISTOGRAM_MODES[] = "histogram-values";
+const char CameraParameters::KEY_HISTOGRAM[] = "histogram";
+const char CameraParameters::KEY_SUPPORTED_HISTOGRAM_MODES[] = "histogram-values";
 
 //Values for Histogram Shading
-const char QCameraParameters::HISTOGRAM_ENABLE[] = "enable";
-const char QCameraParameters::HISTOGRAM_DISABLE[] = "disable";
+const char CameraParameters::HISTOGRAM_ENABLE[] = "enable";
+const char CameraParameters::HISTOGRAM_DISABLE[] = "disable";
 
 //Values for Skin Tone Enhancement Modes
-const char QCameraParameters::SKIN_TONE_ENHANCEMENT_ENABLE[] = "enable";
-const char QCameraParameters::SKIN_TONE_ENHANCEMENT_DISABLE[] = "disable";
+const char CameraParameters::SKIN_TONE_ENHANCEMENT_ENABLE[] = "enable";
+const char CameraParameters::SKIN_TONE_ENHANCEMENT_DISABLE[] = "disable";
 
-const char QCameraParameters::KEY_SHARPNESS[] = "sharpness";
-const char QCameraParameters::KEY_MAX_SHARPNESS[] = "max-sharpness";
-const char QCameraParameters::KEY_CONTRAST[] = "contrast";
-const char QCameraParameters::KEY_MAX_CONTRAST[] = "max-contrast";
-const char QCameraParameters::KEY_SATURATION[] = "saturation";
-const char QCameraParameters::KEY_MAX_SATURATION[] = "max-saturation";
+const char CameraParameters::KEY_SHARPNESS[] = "sharpness";
+const char CameraParameters::KEY_MAX_SHARPNESS[] = "max-sharpness";
+const char CameraParameters::KEY_CONTRAST[] = "contrast";
+const char CameraParameters::KEY_MAX_CONTRAST[] = "max-contrast";
+const char CameraParameters::KEY_SATURATION[] = "saturation";
+const char CameraParameters::KEY_MAX_SATURATION[] = "max-saturation";
 
-const char QCameraParameters::KEY_SINGLE_ISP_OUTPUT_ENABLED[] = "single-isp-output-enabled";
+const char CameraParameters::KEY_SINGLE_ISP_OUTPUT_ENABLED[] = "single-isp-output-enabled";
 
 //Values for DENOISE
-const char QCameraParameters::DENOISE_OFF[] = "denoise-off";
-const char QCameraParameters::DENOISE_ON[] = "denoise-on";
+const char CameraParameters::DENOISE_OFF[] = "denoise-off";
+const char CameraParameters::DENOISE_ON[] = "denoise-on";
 
 // Values for selectable zone af Settings
-const char QCameraParameters::SELECTABLE_ZONE_AF_AUTO[] = "auto";
-const char QCameraParameters::SELECTABLE_ZONE_AF_SPOT_METERING[] = "spot-metering";
-const char QCameraParameters::SELECTABLE_ZONE_AF_CENTER_WEIGHTED[] = "center-weighted";
-const char QCameraParameters::SELECTABLE_ZONE_AF_FRAME_AVERAGE[] = "frame-average";
+const char CameraParameters::SELECTABLE_ZONE_AF_AUTO[] = "auto";
+const char CameraParameters::SELECTABLE_ZONE_AF_SPOT_METERING[] = "spot-metering";
+const char CameraParameters::SELECTABLE_ZONE_AF_CENTER_WEIGHTED[] = "center-weighted";
+const char CameraParameters::SELECTABLE_ZONE_AF_FRAME_AVERAGE[] = "frame-average";
 
 // Values for Face Detection settings.
-const char QCameraParameters::FACE_DETECTION_OFF[] = "off";
-const char QCameraParameters::FACE_DETECTION_ON[] = "on";
+const char CameraParameters::FACE_DETECTION_OFF[] = "off";
+const char CameraParameters::FACE_DETECTION_ON[] = "on";
 
 // Values for MCE settings.
-const char QCameraParameters::MCE_ENABLE[] = "enable";
-const char QCameraParameters::MCE_DISABLE[] = "disable";
+const char CameraParameters::MCE_ENABLE[] = "enable";
+const char CameraParameters::MCE_DISABLE[] = "disable";
 
 // Values for HFR settings.
-const char QCameraParameters::VIDEO_HFR_OFF[] = "off";
-const char QCameraParameters::VIDEO_HFR_2X[] = "60";
-const char QCameraParameters::VIDEO_HFR_3X[] = "90";
-const char QCameraParameters::VIDEO_HFR_4X[] = "120";
+const char CameraParameters::VIDEO_HFR_OFF[] = "off";
+const char CameraParameters::VIDEO_HFR_2X[] = "60";
+const char CameraParameters::VIDEO_HFR_3X[] = "90";
+const char CameraParameters::VIDEO_HFR_4X[] = "120";
 
 // Values for Redeye Reduction settings.
-const char QCameraParameters::REDEYE_REDUCTION_ENABLE[] = "enable";
-const char QCameraParameters::REDEYE_REDUCTION_DISABLE[] = "disable";
+const char CameraParameters::REDEYE_REDUCTION_ENABLE[] = "enable";
+const char CameraParameters::REDEYE_REDUCTION_DISABLE[] = "disable";
 
 // Values for HDR settings.
-const char QCameraParameters::HDR_ENABLE[] = "enable";
-const char QCameraParameters::HDR_DISABLE[] = "disable";
+const char CameraParameters::HDR_ENABLE[] = "enable";
+const char CameraParameters::HDR_DISABLE[] = "disable";
 
 // Values for ZSL settings.
-const char QCameraParameters::ZSL_OFF[] = "off";
-const char QCameraParameters::ZSL_ON[] = "on";
+const char CameraParameters::ZSL_OFF[] = "off";
+const char CameraParameters::ZSL_ON[] = "on";
 
 // Values for HDR Bracketing settings.
-const char QCameraParameters::AE_BRACKET_HDR_OFF[] = "Off";
-const char QCameraParameters::AE_BRACKET_HDR[] = "HDR";
-const char QCameraParameters::AE_BRACKET[] = "AE-Bracket";
+const char CameraParameters::AE_BRACKET_HDR_OFF[] = "Off";
+const char CameraParameters::AE_BRACKET_HDR[] = "HDR";
+const char CameraParameters::AE_BRACKET[] = "AE-Bracket";
 
-const char QCameraParameters::LOW_POWER[] = "Low_Power";
-const char QCameraParameters::NORMAL_POWER[] = "Normal_Power";
+const char CameraParameters::LOW_POWER[] = "Low_Power";
+const char CameraParameters::NORMAL_POWER[] = "Normal_Power";
 
 static const char* portrait = "portrait";
 static const char* landscape = "landscape";
 
-//QCameraParameters::QCameraParameters()
+//CameraParameters::CameraParameters()
 //                : mMap()
 //{
 //}
 
-QCameraParameters::~QCameraParameters()
+CameraParameters::~CameraParameters()
 {
 }
 
-int QCameraParameters::getOrientation() const
+int CameraParameters::getOrientation() const
 {
     const char* orientation = get("orientation");
     if (orientation && !strcmp(orientation, portrait))
         return CAMERA_ORIENTATION_PORTRAIT;
     return CAMERA_ORIENTATION_LANDSCAPE;
 }
-void QCameraParameters::setOrientation(int orientation)
+void CameraParameters::setOrientation(int orientation)
 {
     if (orientation == CAMERA_ORIENTATION_PORTRAIT) {
         set("orientation", portrait);
@@ -300,39 +300,39 @@ static void parseSizesList(const char *sizesStr, Vector<Size> &sizes)
 }
 
 
-void QCameraParameters::getSupportedHfrSizes(Vector<Size> &sizes) const
+void CameraParameters::getSupportedHfrSizes(Vector<Size> &sizes) const
 {
     const char *hfrSizesStr = get(KEY_SUPPORTED_HFR_SIZES);
     parseSizesList(hfrSizesStr, sizes);
 }
 
-void QCameraParameters::setPreviewFpsRange(int minFPS, int maxFPS)
+void CameraParameters::setPreviewFpsRange(int minFPS, int maxFPS)
 {
     char str[32];
     snprintf(str, sizeof(str), "%d,%d",minFPS,maxFPS);
     set(KEY_PREVIEW_FPS_RANGE,str);
 }
 
-void QCameraParameters::setPreviewFrameRateMode(const char *mode)
+void CameraParameters::setPreviewFrameRateMode(const char *mode)
 {
     set(KEY_PREVIEW_FRAME_RATE_MODE, mode);
 }
 
-const char *QCameraParameters::getPreviewFrameRateMode() const
+const char *CameraParameters::getPreviewFrameRateMode() const
 {
     return get(KEY_PREVIEW_FRAME_RATE_MODE);
 }
 
     //ALOGD("dump: mMap.size = %d", mMap.size());
         //ALOGD("%s: %s\n", k.string(), v.string());
-void QCameraParameters::setTouchIndexAec(int x, int y)
+void CameraParameters::setTouchIndexAec(int x, int y)
 {
     char str[32];
     snprintf(str, sizeof(str), "%dx%d", x, y);
     set(KEY_TOUCH_INDEX_AEC, str);
 }
 
-void QCameraParameters::getTouchIndexAec(int *x, int *y) const
+void CameraParameters::getTouchIndexAec(int *x, int *y) const
 {
     *x = -1;
     *y = -1;
@@ -349,14 +349,14 @@ void QCameraParameters::getTouchIndexAec(int *x, int *y) const
     }
 }
 
-void QCameraParameters::setTouchIndexAf(int x, int y)
+void CameraParameters::setTouchIndexAf(int x, int y)
 {
     char str[32];
     snprintf(str, sizeof(str), "%dx%d", x, y);
     set(KEY_TOUCH_INDEX_AF, str);
 }
 
-void QCameraParameters::getTouchIndexAf(int *x, int *y) const
+void CameraParameters::getTouchIndexAf(int *x, int *y) const
 {
     *x = -1;
     *y = -1;
@@ -373,7 +373,7 @@ void QCameraParameters::getTouchIndexAf(int *x, int *y) const
 	}
 }
 
-void QCameraParameters::getMeteringAreaCenter(int *x, int *y) const
+void CameraParameters::getMeteringAreaCenter(int *x, int *y) const
 {
     //Default invalid values
     *x = -2000;

@@ -69,7 +69,8 @@ LOCAL_SRC_FILES := mm_camera_interface2.c mm_camera_stream.c \
                    QCameraHWI.cpp QCameraHWI_Preview.cpp \
                    QCameraHWI_Record.cpp QCameraHWI_Still.cpp \
                    QCameraHWI_Mem.cpp QCameraHWI_Display.cpp \
-                   QCameraStream.cpp QualcommCamera2.cpp QCameraParameters.cpp 
+                   QCameraStream.cpp QualcommCamera2.cpp
+                   #CameraParameters.cpp 
                    #mm_camera_sock.c
 else
 LOCAL_SRC_FILES := QualcommCamera.cpp QualcommCameraHardware.cpp
