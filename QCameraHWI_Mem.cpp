@@ -228,6 +228,7 @@ bool register_record_buffers(bool register_buffer) {
     return true;
 }
 #endif
+#ifndef USE_ION
 PmemPool::PmemPool(const char *pmem_pool,
                                            int flags,
                                            int pmem_type,
@@ -244,7 +245,7 @@ PmemPool::PmemPool(const char *pmem_pool,
          mName,
          pmem_pool, num_buffers, frame_size,
          buffer_size);
-#if 0
+
     //mMMCameraDLRef = MMCameraDL::getInstance();
 
 
@@ -332,7 +333,6 @@ PmemPool::PmemPool(const char *pmem_pool,
     else ALOGE("pmem pool %s error: could not create master heap!",
               pmem_pool);
     ALOGI("%s: (%s) X ", __FUNCTION__, mName);
-#endif
 }
 
 PmemPool::~PmemPool()
@@ -364,6 +364,7 @@ PmemPool::~PmemPool()
 #endif
     ALOGI("%s: %s X", __FUNCTION__, mName);
 }
+#endif
 
 MemPool::~MemPool()
 {
