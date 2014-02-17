@@ -2326,7 +2326,7 @@ int QCameraHardwareInterface::initHeapMem( QCameraHalHeap_t *heap,
     for(i = 0; i < num_of_buf; i++) {
 #ifdef USE_ION
 //      rc = allocate_ion_memory(heap, i, ION_CP_MM_HEAP_ID);
-        rc = allocate_ion_memory(heap, i, (0x1 << ION_CP_MM_HEAP_ID));
+        rc = allocate_ion_memory(heap, i, (0x1 << ION_CAMERA_HEAP_ID));
         if (rc < 0) {
             ALOGE("%sION allocation failed MAIN!\n", __func__);
             break;
