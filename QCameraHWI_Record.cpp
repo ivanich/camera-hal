@@ -379,6 +379,7 @@ status_t QCameraStream_record::initEncodeBuffers()
   status_t ret = NO_ERROR;
   const char *pmem_region;
   uint32_t frame_len;
+  uint32_t frame_len_unp;
   uint8_t num_planes;
   uint32_t planes[VIDEO_MAX_PLANES];
   //cam_ctrl_dimension_t dim;
@@ -404,11 +405,17 @@ status_t QCameraStream_record::initEncodeBuffers()
 //  planes[1] = dim.video_frame_offset.mp[1].len;
 //  frame_len = dim.video_frame_offset.frame_len;
 //    ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
-  frame_len = mm_camera_get_msm_frame_len(dim.enc_format , CAMERA_MODE_2D,
+  frame_len_unp = mm_camera_get_msm_frame_len(dim.enc_format , CAMERA_MODE_2D,
                              width,height, OUTPUT_TYPE_V,
                              &num_planes, planes);
+ if (width==1280 && height==720) {
+    frame_len = frame_len_unp + 2048;
+ }
+ else {
+    frame_len = frame_len_unp;
+ }
 
-ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
+ALOGE("%s: %d %d %d %d",__func__,planes[0],planes[1],frame_len,width);
   buf_cnt = VIDEO_BUFFER_COUNT;
   if(mHalCamCtrl->isLowPowerCamcorder()) {
     ALOGE("%s: lower power camcorder selected", __func__);
