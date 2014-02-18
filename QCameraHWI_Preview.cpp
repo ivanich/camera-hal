@@ -227,6 +227,18 @@ status_t QCameraStream_preview::getBufferFromSurface() {
 		}
 		mHalCamCtrl->mPreviewMemory.private_buffer_handle[cnt] =
 		    (struct private_handle_t *)(*mHalCamCtrl->mPreviewMemory.buffer_handle[cnt]);
+#ifdef USE_ION
+        mHalCamCtrl->mPreviewMemory.main_ion_fd[cnt] = open("/dev/ion", O_RDONLY);
+        if (mHalCamCtrl->mPreviewMemory.main_ion_fd[cnt] < 0) {
+            ALOGE("%s: failed: could not open ion device\n", __func__);
+        } else {
+            mHalCamCtrl->mPreviewMemory.ion_info_fd[cnt].fd =
+            mHalCamCtrl->mPreviewMemory.private_buffer_handle[cnt]->fd;
+            if (ioctl(mHalCamCtrl->mPreviewMemory.main_ion_fd[cnt],
+              ION_IOC_IMPORT, &mHalCamCtrl->mPreviewMemory.ion_info_fd[cnt]) < 0)
+              ALOGE("ION import failed\n");
+        }
+#endif
 		mHalCamCtrl->mPreviewMemory.camera_memory[cnt] =
 		    mHalCamCtrl->mGetMemory(mHalCamCtrl->mPreviewMemory.private_buffer_handle[cnt]->fd,
 			mHalCamCtrl->mPreviewMemory.private_buffer_handle[cnt]->size, 1, (void *)this);
@@ -263,6 +275,14 @@ status_t QCameraStream_preview::putBufferToSurface() {
         }
 
         mHalCamCtrl->mPreviewMemory.camera_memory[cnt]->release(mHalCamCtrl->mPreviewMemory.camera_memory[cnt]);
+#ifdef USE_ION
+        struct ion_handle_data ion_handle;
+        ion_handle.handle = mHalCamCtrl->mPreviewMemory.ion_info_fd[cnt].handle;
+        if (ioctl(mHalCamCtrl->mPreviewMemory.main_ion_fd[cnt], ION_IOC_FREE, &ion_handle)
+            < 0)
+            ALOGE("%s: ion free failed\n", __func__);
+        close(mHalCamCtrl->mPreviewMemory.main_ion_fd[cnt]);
+#endif
             if (BUFFER_LOCKED == mHalCamCtrl->mPreviewMemory.local_flag[cnt]) {
                 ALOGD("%s: camera call genlock_unlock", __FUNCTION__);
 	        if (GENLOCK_FAILURE == genlock_unlock_buffer((native_handle_t *)
@@ -327,9 +347,12 @@ status_t  QCameraStream_preview::getBufferNoDisplay( )
     planes[i] = dim.display_frame_offset.mp[i].len;
   }
 
-  frame_len = dim.picture_frame_offset.frame_len;
-  y_off = dim.picture_frame_offset.mp[0].offset;
-  cbcr_off = dim.picture_frame_offset.mp[1].offset;
+//  frame_len = dim.picture_frame_offset.frame_len;
+//  y_off = dim.picture_frame_offset.mp[0].offset;
+//  cbcr_off = dim.picture_frame_offset.mp[1].offset;
+  frame_len = dim.display_frame_offset.frame_len;
+  y_off = dim.display_frame_offset.mp[0].offset;
+  cbcr_off = dim.display_frame_offset.mp[1].offset;
   ALOGE("%s: main image: rotation = %d, yoff = %d, cbcroff = %d, size = %d, width = %d, height = %d",
        __func__, dim.rotation, y_off, cbcr_off, frame_len,
        dim.display_width, dim.display_height);
@@ -488,6 +511,8 @@ ALOGE("%s: planes=%d %d len=%d",__func__,planes[0],planes[1],this->mDisplayStrea
       mDisplayStreamBuf.frame[i].buffer =
           (long unsigned int)mHalCamCtrl->mPreviewMemory.camera_memory[i]->data;
       mDisplayStreamBuf.frame[i].ion_alloc.len = mHalCamCtrl->mPreviewMemory.private_buffer_handle[i]->size;
+      mDisplayStreamBuf.frame[i].ion_dev_fd = mHalCamCtrl->mPreviewMemory.main_ion_fd[i];
+      mDisplayStreamBuf.frame[i].fd_data = mHalCamCtrl->mPreviewMemory.ion_info_fd[i];
 
     ALOGE("%s: idx = %d, fd = %d, size = %d, cbcr_offset = %d, y_offset = %d, "
       "offset = %d, vaddr = 0x%x", __func__, i, mDisplayStreamBuf.frame[i].fd,
@@ -666,10 +691,11 @@ status_t QCameraStream_preview::initPreviewOnlyBuffers()
       mDisplayStreamBuf.frame[i].path = OUTPUT_TYPE_P;
       mDisplayStreamBuf.frame[i].buffer =
           (long unsigned int)mHalCamCtrl->mNoDispPreviewMemory.camera_memory[i]->data;
-
+      mDisplayStreamBuf.frame[i].ion_dev_fd = mHalCamCtrl->mNoDispPreviewMemory.main_ion_fd[i];
+      mDisplayStreamBuf.frame[i].fd_data = mHalCamCtrl->mNoDispPreviewMemory.ion_info_fd[i];
     ALOGE("%s: idx = %d, fd = %d, size = %d, cbcr_offset = %d, y_offset = %d, "
       "vaddr = 0x%x", __func__, i, mDisplayStreamBuf.frame[i].fd,
-      frame_len,
+      mDisplayStreamBuf.frame_len,
       mDisplayStreamBuf.frame[i].cbcr_off, mDisplayStreamBuf.frame[i].y_off,
       (uint32_t)mDisplayStreamBuf.frame[i].buffer);
 
@@ -819,6 +845,7 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
   cache_inv_data.fd = frame->def.frame->fd;
   cache_inv_data.handle = frame->def.frame->fd_data.handle;
   cache_inv_data.length = frame->def.frame->ion_alloc.len;
+  cache_inv_data.offset = 0;
 
   if (mHalCamCtrl->cache_ops(ion_fd, &cache_inv_data,
                                 ION_IOC_CLEAN_INV_CACHES) < 0)

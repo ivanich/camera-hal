@@ -345,6 +345,7 @@ status_t QCameraStream_record::processRecordFrame(void *data)
   cache_inv_data.fd = frame->video.video.frame->fd;
   cache_inv_data.handle = frame->video.video.frame->fd_data.handle;
   cache_inv_data.length = frame->video.video.frame->ion_alloc.len;
+  cache_inv_data.offset = 0;
 
   if (mHalCamCtrl->cache_ops(ion_fd, &cache_inv_data, ION_IOC_CLEAN_CACHES) < 0)
     ALOGE("%s: Cache clean for Video buffer %p fd = %d failed", __func__,
@@ -438,7 +439,7 @@ ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
     for (int cnt = 0; cnt < mHalCamCtrl->mRecordingMemory.buffer_count; cnt++) {
 #ifdef USE_ION
 //    if(mHalCamCtrl->allocate_ion_memory(&mHalCamCtrl->mRecordingMemory, cnt, ION_CP_MM_HEAP_ID) < 0) {
-      if(mHalCamCtrl->allocate_ion_memory(&mHalCamCtrl->mRecordingMemory, cnt, (0x1 << ION_CP_MM_HEAP_ID)) < 0) {
+      if(mHalCamCtrl->allocate_ion_memory(&mHalCamCtrl->mRecordingMemory, cnt, (0x1 << ION_CAMERA_HEAP_ID)) < 0) {
         ALOGE("%s ION alloc failed\n", __func__);
         return UNKNOWN_ERROR;
       }
@@ -474,6 +475,7 @@ ALOGE("%s: %d %d %d",__func__,planes[0],planes[1],frame_len);
 	    recordframes[cnt].path = OUTPUT_TYPE_V;
       recordframes[cnt].fd_data = mHalCamCtrl->mRecordingMemory.ion_info_fd[cnt];
       recordframes[cnt].ion_alloc = mHalCamCtrl->mRecordingMemory.alloc[cnt];
+      recordframes[cnt].ion_dev_fd = mHalCamCtrl->mRecordingMemory.main_ion_fd[cnt];
 
       //record_offset[cnt] =  mRecordHeap->mAlignedBufferSize * cnt;
 

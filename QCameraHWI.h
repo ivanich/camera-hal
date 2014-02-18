@@ -137,6 +137,8 @@ typedef struct {
 	 uint8_t                 local_flag[MM_CAMERA_MAX_NUM_FRAMES];
      int                     enqueued_flag[MM_CAMERA_MAX_NUM_FRAMES];
 	 camera_memory_t        *camera_memory[MM_CAMERA_MAX_NUM_FRAMES];
+     int                     main_ion_fd[MM_CAMERA_MAX_NUM_FRAMES];
+     struct ion_fd_data      ion_info_fd[MM_CAMERA_MAX_NUM_FRAMES];
 } QCameraHalMemory_t;
 
 
