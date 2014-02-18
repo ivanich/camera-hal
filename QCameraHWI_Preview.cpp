@@ -347,12 +347,12 @@ status_t  QCameraStream_preview::getBufferNoDisplay( )
     planes[i] = dim.display_frame_offset.mp[i].len;
   }
 
-//  frame_len = dim.picture_frame_offset.frame_len;
-//  y_off = dim.picture_frame_offset.mp[0].offset;
-//  cbcr_off = dim.picture_frame_offset.mp[1].offset;
-  frame_len = dim.display_frame_offset.frame_len;
-  y_off = dim.display_frame_offset.mp[0].offset;
-  cbcr_off = dim.display_frame_offset.mp[1].offset;
+  frame_len = dim.picture_frame_offset.frame_len;
+  y_off = dim.picture_frame_offset.mp[0].offset;
+  cbcr_off = dim.picture_frame_offset.mp[1].offset;
+//  frame_len = dim.display_frame_offset.frame_len;
+//  y_off = dim.display_frame_offset.mp[0].offset;
+//  cbcr_off = dim.display_frame_offset.mp[1].offset;
   ALOGE("%s: main image: rotation = %d, yoff = %d, cbcroff = %d, size = %d, width = %d, height = %d",
        __func__, dim.rotation, y_off, cbcr_off, frame_len,
        dim.display_width, dim.display_height);
@@ -528,7 +528,7 @@ ALOGE("%s: planes=%d %d len=%d",__func__,planes[0],planes[1],this->mDisplayStrea
 			mHalCamCtrl->mPreviewMemory.private_buffer_handle[i]->size);
     if (NO_ERROR != ret) {
       ALOGE("%s: sending mapping data Msg Failed", __func__);
-//      goto error;
+      goto error;
     }
 
     mDisplayBuf.preview.buf.mp[i].frame = mDisplayStreamBuf.frame[i];
@@ -706,7 +706,7 @@ status_t QCameraStream_preview::initPreviewOnlyBuffers()
 			mHalCamCtrl->mNoDispPreviewMemory.size);
     if (NO_ERROR != ret) {
       ALOGE("%s: sending mapping data Msg Failed", __func__);
-//      goto error;
+      goto error;
     }
 
     mDisplayBuf.preview.buf.mp[i].frame = mDisplayStreamBuf.frame[i];
