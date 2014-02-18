@@ -466,7 +466,7 @@ public:
       int ion_type);
     int deallocate_ion_memory(QCameraHalHeap_t *p_camera_memory, int cnt);
 
-    int cache_ops(struct ion_flush_data *cache_inv_data, int type);
+    int cache_ops(int ion_fd, struct ion_flush_data *cache_inv_data, int type);
 
     void dumpFrameToFile(const void * data, uint32_t size, char* name,
       char* ext, int index);

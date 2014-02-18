@@ -813,13 +813,15 @@ status_t QCameraStream_preview::processPreviewFrameWithDisplay(
 
 #ifdef USE_ION
   struct ion_flush_data cache_inv_data;
-
+  int ion_fd;
+  ion_fd = frame->def.frame->ion_dev_fd;
   cache_inv_data.vaddr = (void *)frame->def.frame->buffer;
   cache_inv_data.fd = frame->def.frame->fd;
   cache_inv_data.handle = frame->def.frame->fd_data.handle;
   cache_inv_data.length = frame->def.frame->ion_alloc.len;
 
-  if (mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_CACHES) < 0)
+  if (mHalCamCtrl->cache_ops(ion_fd, &cache_inv_data,
+                                ION_IOC_CLEAN_INV_CACHES) < 0)
     ALOGE("%s: Cache clean for Preview buffer %p fd = %d failed", __func__,
       cache_inv_data.vaddr, cache_inv_data.fd);
 #endif

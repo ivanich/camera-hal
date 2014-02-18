@@ -1684,17 +1684,19 @@ encodeDisplayAndSave(mm_camera_ch_data_buf_t* recvd_frame,
     cache_inv_data.fd = recvd_frame->snapshot.main.frame->fd;
     cache_inv_data.handle = recvd_frame->snapshot.main.frame->fd_data.handle;
     cache_inv_data.length = recvd_frame->snapshot.main.frame->ion_alloc.len;
+    ion_fd = recvd_frame->snapshot.main.frame->ion_dev_fd;
     if(ion_fd > 0) {
-      if(mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_INV_CACHES) < 0)
+      if(mHalCamCtrl->cache_ops(ion_fd, &cache_inv_data, ION_IOC_CLEAN_INV_CACHES) < 0)
           ALOGE("%s: Cache Invalidate failed\n", __func__);
       else {
           ALOGD("%s: Successful cache invalidate\n", __func__);
 	  if(!isFullSizeLiveshot()) {
+	    ion_fd = recvd_frame->snapshot.thumbnail.frame->ion_dev_fd;
             cache_inv_data.vaddr = (void*)recvd_frame->snapshot.thumbnail.frame->buffer;
             cache_inv_data.fd = recvd_frame->snapshot.thumbnail.frame->fd;
             cache_inv_data.handle = recvd_frame->snapshot.thumbnail.frame->fd_data.handle;
             cache_inv_data.length = recvd_frame->snapshot.thumbnail.frame->ion_alloc.len;
-            if(mHalCamCtrl->cache_ops(&cache_inv_data, ION_IOC_CLEAN_INV_CACHES) < 0)
+            if(mHalCamCtrl->cache_ops(ion_fd, &cache_inv_data, ION_IOC_CLEAN_INV_CACHES) < 0)
               ALOGE("%s: Cache Invalidate failed\n", __func__);
             else
               ALOGD("%s: Successful cache invalidate\n", __func__);
