@@ -986,7 +986,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     mParameters.set("video-snapshot-supported", "true");
 
     //Set default power mode
-//    mParameters.set(CameraParameters::KEY_POWER_MODE,"Normal_Power");
+    mParameters.set(CameraParameters::KEY_POWER_MODE,"Normal_Power");
 
     //Set Camera Mode
     mParameters.set(CameraParameters::KEY_CAMERA_MODE,0);
