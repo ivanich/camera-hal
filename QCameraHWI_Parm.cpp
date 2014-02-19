@@ -1953,7 +1953,7 @@ status_t QCameraHardwareInterface::setFocusMode(const CameraParameters& params)
         if (value != NOT_FOUND) {
             mParameters.set(CameraParameters::KEY_FOCUS_MODE, str);
             mFocusMode = value;
-
+            ALOGD("%s: mFocusMode value: %d", __func__,value);
             if(updateFocusDistances() != NO_ERROR) {
                ALOGE("%s: updateFocusDistances failed for %s", __FUNCTION__, str);
                return UNKNOWN_ERROR;
@@ -3200,7 +3200,7 @@ isp3a_af_mode_t QCameraHardwareInterface::getAutoFocusMode(
   const CameraParameters& params)
 {
   isp3a_af_mode_t afMode = AF_MODE_MAX;
-  afMode = (isp3a_af_mode_t)mFocusMode;
+  afMode = (isp3a_af_mode_t)2;
   return afMode;
 }
 
@@ -3223,7 +3223,6 @@ cam_format_t QCameraHardwareInterface::getPreviewFormat() const
     int32_t value = attr_lookup(preview_formats,
                                 sizeof(preview_formats)/sizeof(str_map),
                                 str);
-
     if(value != NOT_FOUND) {
         int num = sizeof(preview_format_info_list)/sizeof(preview_format_info_t);
         int i;
