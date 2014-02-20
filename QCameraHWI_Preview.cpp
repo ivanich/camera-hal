@@ -482,12 +482,17 @@ status_t QCameraStream_preview::initDisplayBuffers()
   memset(&mDisplayStreamBuf, 0, sizeof(mDisplayStreamBuf));
   this->mDisplayStreamBuf.num = mHalCamCtrl->mPreviewMemory.buffer_count;
   this->myMode=myMode; /*Need to assign this in constructor after translating from mask*/
-  num_planes = dim.display_frame_offset.num_planes;
+/*  num_planes = dim.display_frame_offset.num_planes;
   for (i=0; i< num_planes; i++) {
     planes[i] = dim.display_frame_offset.mp[i].len;
   }
   this->mDisplayStreamBuf.frame_len = dim.display_frame_offset.frame_len;
-ALOGE("%s: planes=%d %d len=%d",__func__,planes[0],planes[1],this->mDisplayStreamBuf.frame_len);
+ALOGE("%s: planes=%d %d len=%d",__func__,planes[0],planes[1],this->mDisplayStreamBuf.frame_len);*/
+  num_planes = 2;
+  planes[0] = width*height; //dim.display_frame_offset.mp[0].len;
+  planes[1] = dim.display_frame_offset.mp[1].len;
+  this->mDisplayStreamBuf.frame_len = planes[0]+planes[1]; //dim.display_frame_offset.frame_len;
+  ALOGE("%s: planes=%d %d len=%d",__func__,planes[0],planes[1],this->mDisplayStreamBuf.frame_len);
   memset(&mDisplayBuf, 0, sizeof(mDisplayBuf));
   mDisplayBuf.preview.buf.mp = new mm_camera_mp_buf_t[mDisplayStreamBuf.num];
   if (!mDisplayBuf.preview.buf.mp) {

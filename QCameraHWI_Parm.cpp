@@ -91,8 +91,8 @@ extern "C" {
 #define DEFAULT_PICTURE_HEIGHT 480
 
 //Default Preview Width
-#define DEFAULT_PREVIEW_WIDTH 1280
-#define DEFAULT_PREVIEW_HEIGHT 720
+#define DEFAULT_PREVIEW_WIDTH 640
+#define DEFAULT_PREVIEW_HEIGHT 480
 
 #define THUMBNAIL_SIZE_COUNT (sizeof(thumbnail_sizes)/sizeof(thumbnail_size_type))
 #define DEFAULT_THUMBNAIL_SETTING 4
@@ -137,27 +137,27 @@ static camera_size_type jpeg_thumbnail_sizes[]  = {
 { 512, 384 },
 { 352, 288 },
 { 640, 480 },
-//{ 320, 240 },
-//{ 176, 144 },
+{ 320, 240 },
+{ 176, 144 },
 {0,0}
 };
 
 static camera_size_type default_preview_sizes[] = {
   { 1920, 1088}, //1080p
   { 1280, 720}, // 720P, reserved
-//  { 960, 720}, // for panorama
-//  { 960, 544},
-//  { 800, 480}, // WVGA
-//  { 768, 432},
-//  { 720, 480},
-//  { 640, 480}, // VGA
-//  { 576, 432},
+  { 960, 720}, // for panorama
+  { 960, 544},
+  { 800, 480}, // WVGA
+  { 768, 432},
+  { 720, 480},
+  { 640, 480}, // VGA
+  { 576, 432},
   { 480, 320}, // HVGA
-//  { 384, 288},
-//  { 352, 288}, // CIF
-//  { 320, 240}, // QVGA
-//  { 240, 160}, // SQVGA
-//  { 176, 144}, // QCIF
+  { 384, 288},
+  { 352, 288}, // CIF
+  { 320, 240}, // QVGA
+  { 240, 160}, // SQVGA
+  { 176, 144}, // QCIF
 };
 
 static camera_size_type default_video_sizes[] = {
@@ -165,12 +165,12 @@ static camera_size_type default_video_sizes[] = {
   { 1280, 720}, // 720p
   { 960, 720},  // for panorama
   { 800, 480},  // WVGA
-//  { 768, 432},
+  { 768, 432},
   { 720, 480},  // 480p
   { 640, 480},  // VGA
   { 480, 320},  // HVGA
-//  { 352, 288},  // CIF
-//  { 320, 240},  // QVGA
+  { 352, 288},  // CIF
+  { 320, 240},  // QVGA
 //  { 176, 144},  // QCIF
 };
 #define DEFAULT_VIDEO_SIZES_COUNT (sizeof(default_video_sizes)/sizeof(camera_size_type))
@@ -186,8 +186,12 @@ static struct camera_size_type zsl_picture_sizes[] = {
 };
 
 static camera_size_type default_picture_sizes[] = {
+  { 4000, 3000}, // 12MP
   { 3264, 2448}, // 8MP
+  { 3264, 1840}, // 6MP
   { 2592, 1944}, // 5MP
+  { 2992, 1680},
+  { 2592, 1456},
   { 2048, 1536}, // 3MP QXGA
   { 1920, 1088}, //HD1080
   { 1600, 1200}, // 2MP UXGA
@@ -541,6 +545,7 @@ static String8 create_values_range_str(int min, int max){
 
         for (int i = min + 1; i <= max; i++) {
             snprintf(buffer, sizeof(buffer), ",%d", i);
+            if(i%10 == 0)
             str.append(buffer);
         }
     }
@@ -2612,10 +2617,11 @@ status_t QCameraHardwareInterface::setPreviewFormat(const CameraParameters& para
           return BAD_VALUE;
         }
         bool ret = native_set_parms(MM_CAMERA_PARM_PREVIEW_FORMAT, sizeof(cam_format_t),
-                                   (void *)&format_info.mm_cam_format);
+                                   (void *)&mPreviewFormatInfo.mm_cam_format);
         mParameters.set(CameraParameters::KEY_PREVIEW_FORMAT, str);
-        mPreviewFormat = previewFormat;
-        ALOGE("Setting preview format to %d",mPreviewFormat);
+        mPreviewFormat = mPreviewFormatInfo.mm_cam_format;
+        ALOGI("Setting preview format to %d, i =%d, num=%d, hal_format=%d",
+             mPreviewFormat, i, num, mPreviewFormatInfo.Hal_format);
         return NO_ERROR;
     } else if ( strTexturesOn ) {
       mPreviewFormatInfo.mm_cam_format = CAMERA_YUV_420_NV21;
