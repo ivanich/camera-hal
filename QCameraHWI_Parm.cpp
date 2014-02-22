@@ -83,7 +83,7 @@ extern "C" {
 
 //Default FPS
 #define MINIMUM_FPS 5
-#define MAXIMUM_FPS 30
+#define MAXIMUM_FPS 31
 #define DEFAULT_FPS MAXIMUM_FPS
 
 //Default Picture Width
@@ -155,9 +155,9 @@ static camera_size_type default_preview_sizes[] = {
   { 480, 320}, // HVGA
   { 384, 288},
   { 352, 288}, // CIF
-  { 320, 240}, // QVGA
-  { 240, 160}, // SQVGA
-  { 176, 144}, // QCIF
+//  { 320, 240}, // QVGA
+//  { 240, 160}, // SQVGA
+//  { 176, 144}, // QCIF
 };
 
 static camera_size_type default_video_sizes[] = {
@@ -170,7 +170,7 @@ static camera_size_type default_video_sizes[] = {
   { 640, 480},  // VGA
   { 480, 320},  // HVGA
   { 352, 288},  // CIF
-  { 320, 240},  // QVGA
+//  { 320, 240},  // QVGA
 //  { 176, 144},  // QCIF
 };
 #define DEFAULT_VIDEO_SIZES_COUNT (sizeof(default_video_sizes)/sizeof(camera_size_type))
@@ -2370,18 +2370,6 @@ status_t QCameraHardwareInterface::setVideoSize(const CameraParameters& params)
                 mParameters.setPreviewSize(mPreviewWidth, mPreviewHeight);
             }
 
-            if(mIs3DModeOn == true) {
-                /* As preview and video frames are same in 3D mode,
-                 * preview size should be same as video size. This
-                 * cahnge is needed to take of video resolutions
-                 * like 720P and 1080p where the application can
-                 * request different preview sizes like 768x432
-                 */
-                ALOGE("3D mod is on");
-                mPreviewWidth = videoWidth;
-                mPreviewHeight = videoHeight;
-                mParameters.setPreviewSize(mPreviewWidth, mPreviewHeight);
-            }
         } else {
             mParameters.set(CameraParameters::KEY_VIDEO_SIZE, "");
             ALOGE("%s: error :failed to parse parameter record-size (%s)", __func__, str);
@@ -2390,13 +2378,14 @@ status_t QCameraHardwareInterface::setVideoSize(const CameraParameters& params)
     }
     ALOGE("%s: preview dimensions: %dx%d", __func__, mPreviewWidth, mPreviewHeight);
     ALOGE("%s: video dimensions: %dx%d", __func__, videoWidth, videoHeight);
-    mDimension.display_width = mPreviewWidth;
-    mDimension.display_height= mPreviewHeight;
+//    mDimension.display_width = videoWidth;
+//    mDimension.display_height= videoHeight;
+if (mCameraId==0) {
     mDimension.orig_video_width = videoWidth;
     mDimension.orig_video_height = videoHeight;
     mDimension.video_width = videoWidth;
     mDimension.video_height = videoHeight;
-
+}
     ALOGE("%s: E", __func__);
     return NO_ERROR;
 }
@@ -2460,8 +2449,15 @@ status_t QCameraHardwareInterface::setPreviewSize(const CameraParameters& params
             ALOGE("setPreviewSize:  width: %d   heigh: %d", width, height);
             mPreviewWidth = width;
             mPreviewHeight = height;
-            mDimension.display_width = width;
-            mDimension.display_height = height;
+
+            mDimension.display_width = mPreviewWidth;
+            mDimension.display_height = mPreviewHeight;
+if (mCameraId==1) {
+            mDimension.orig_video_width = mPreviewWidth;
+            mDimension.orig_video_height = mPreviewHeight;
+            mDimension.video_width = mPreviewWidth;
+            mDimension.video_height = mPreviewHeight;
+}
             return NO_ERROR;
         }
     }
