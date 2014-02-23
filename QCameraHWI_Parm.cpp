@@ -83,7 +83,7 @@ extern "C" {
 
 //Default FPS
 #define MINIMUM_FPS 5
-#define MAXIMUM_FPS 30
+#define MAXIMUM_FPS 31
 #define DEFAULT_FPS MAXIMUM_FPS
 
 //Default Picture Width
@@ -169,7 +169,7 @@ static camera_size_type default_video_sizes[] = {
   { 720, 480},  // 480p
   { 640, 480},  // VGA
   { 480, 320},  // HVGA
-//  { 352, 288},  // CIF
+  { 352, 288},  // CIF
 //  { 320, 240},  // QVGA
 //  { 176, 144},  // QCIF
 };
@@ -2387,11 +2387,12 @@ status_t QCameraHardwareInterface::setVideoSize(const CameraParameters& params)
     ALOGE("%s: video dimensions: %dx%d", __func__, videoWidth, videoHeight);
     mDimension.display_width = mPreviewWidth;
     mDimension.display_height= mPreviewHeight;
+if (mCameraId==0) {
     mDimension.orig_video_width = videoWidth;
     mDimension.orig_video_height = videoHeight;
     mDimension.video_width = videoWidth;
     mDimension.video_height = videoHeight;
-
+}
     ALOGE("%s: E", __func__);
     return NO_ERROR;
 }
@@ -2457,6 +2458,13 @@ status_t QCameraHardwareInterface::setPreviewSize(const CameraParameters& params
             mPreviewHeight = height;
             mDimension.display_width = width;
             mDimension.display_height = height;
+if (mCameraId==1) {
+            mDimension.orig_video_width = mPreviewWidth;
+            mDimension.orig_video_height = mPreviewHeight;
+            mDimension.video_width = mPreviewWidth;
+            mDimension.video_height = mPreviewHeight;
+}
+            
             return NO_ERROR;
         }
     }
@@ -2612,10 +2620,11 @@ status_t QCameraHardwareInterface::setPreviewFormat(const CameraParameters& para
           return BAD_VALUE;
         }
         bool ret = native_set_parms(MM_CAMERA_PARM_PREVIEW_FORMAT, sizeof(cam_format_t),
-                                   (void *)&format_info.mm_cam_format);
+				   (void *)&mPreviewFormatInfo.mm_cam_format);
         mParameters.set(CameraParameters::KEY_PREVIEW_FORMAT, str);
-        mPreviewFormat = previewFormat;
-        ALOGE("Setting preview format to %d",mPreviewFormat);
+        mPreviewFormat = mPreviewFormatInfo.mm_cam_format;
+        ALOGI("Setting preview format to %d, i =%d, num=%d, hal_format=%d",
+             mPreviewFormat, i, num, mPreviewFormatInfo.Hal_format);
         return NO_ERROR;
     } else if ( strTexturesOn ) {
       mPreviewFormatInfo.mm_cam_format = CAMERA_YUV_420_NV21;
